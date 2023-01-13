@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/Rewriterl/ifgather/internal/cmd"
 	_ "github.com/Rewriterl/ifgather/router"
-	_ "github.com/Rewriterl/ifgather/utility/pqsql"
+	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	"github.com/gogf/gf/v2/os/gctx"
 )
 

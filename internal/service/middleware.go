@@ -77,6 +77,10 @@ func (s *serviceSession) SetUser(ctx context.Context, user *model.Users) error {
 	return Context.Get(ctx).Session.Set(sessionKeyUser, user)
 }
 
+func (s *serviceContext) SetUser(ctx context.Context, ctxUser *model.ContextUser) {
+	s.Get(ctx).User = ctxUser
+}
+
 func (s *serviceSession) RemoveUser(ctx context.Context) error {
 	customCtx := Context.Get(ctx)
 	if customCtx != nil {
