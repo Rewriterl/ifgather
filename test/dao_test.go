@@ -26,7 +26,7 @@ func TestUsersDaoModify(t *testing.T) {
 
 func TestUsersDao(t *testing.T) {
 	gtest.C(t, func(t *gtest.T) {
-		one, err := dao.Users.Ctx(context.Background()).Where("id = ?", 3).One()
+		one, err := dao.Users.Ctx(context.Background()).One("username = ?", "admin")
 		gtest.AssertEQ(err, nil)
 		s := fmt.Sprintf("%+v", one)
 		fmt.Println(s)
