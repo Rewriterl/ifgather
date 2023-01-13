@@ -8,7 +8,7 @@ import (
 	"github.com/Rewriterl/ifgather/internal/dao/internal"
 )
 
-// internalUtilPortscanTaskDao is internal type for wrapping internal DAO implements.
+// internalUtilPortscanTaskDao is do type for wrapping do DAO implements.
 type internalUtilPortscanTaskDao = *internal.UtilPortscanTaskDao
 
 // utilPortscanTaskDao is the data access object for table util_portscan_task.

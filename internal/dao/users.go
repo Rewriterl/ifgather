@@ -8,7 +8,7 @@ import (
 	"github.com/Rewriterl/ifgather/internal/dao/internal"
 )
 
-// internalUsersDao is internal type for wrapping internal DAO implements.
+// internalUsersDao is do type for wrapping do DAO implements.
 type internalUsersDao = *internal.UsersDao
 
 // usersDao is the data access object for table users.

@@ -8,7 +8,7 @@ import (
 	"github.com/Rewriterl/ifgather/internal/dao/internal"
 )
 
-// internalBanalyzeDao is internal type for wrapping internal DAO implements.
+// internalBanalyzeDao is do type for wrapping do DAO implements.
 type internalBanalyzeDao = *internal.BanalyzeDao
 
 // banalyzeDao is the data access object for table banalyze.

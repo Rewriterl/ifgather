@@ -8,7 +8,7 @@ import (
 	"github.com/Rewriterl/ifgather/internal/dao/internal"
 )
 
-// internalScanWebDao is internal type for wrapping internal DAO implements.
+// internalScanWebDao is do type for wrapping do DAO implements.
 type internalScanWebDao = *internal.ScanWebDao
 
 // scanWebDao is the data access object for table scan_web.

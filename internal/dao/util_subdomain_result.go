@@ -8,7 +8,7 @@ import (
 	"github.com/Rewriterl/ifgather/internal/dao/internal"
 )
 
-// internalUtilSubdomainResultDao is internal type for wrapping internal DAO implements.
+// internalUtilSubdomainResultDao is do type for wrapping do DAO implements.
 type internalUtilSubdomainResultDao = *internal.UtilSubdomainResultDao
 
 // utilSubdomainResultDao is the data access object for table util_subdomain_result.

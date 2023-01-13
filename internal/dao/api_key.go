@@ -8,7 +8,7 @@ import (
 	"github.com/Rewriterl/ifgather/internal/dao/internal"
 )
 
-// internalApiKeyDao is internal type for wrapping internal DAO implements.
+// internalApiKeyDao is do type for wrapping do DAO implements.
 type internalApiKeyDao = *internal.ApiKeyDao
 
 // apiKeyDao is the data access object for table api_key.

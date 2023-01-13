@@ -390,7 +390,6 @@ func (d *Driver) DoExec(ctx context.Context, link gdb.Link, sql string, args ...
 	}
 
 	// Sql filtering.
-	// TODO: internal function formatSql
 	// sql, args = formatSql(sql, args)
 	sql, args, err = d.DoFilter(ctx, link, sql, args)
 	if err != nil {
