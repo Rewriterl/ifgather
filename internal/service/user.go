@@ -121,6 +121,7 @@ func (s *serviceUser) SearchUser(ctx context.Context, page, limit int, search in
 	}
 	count, _ := UserSearch.Count()
 	if page > 0 && limit > 0 {
+		// BUG:查询结果中的id是以1为始的自增序列
 		err := UserSearch.Order("id desc").Limit((page-1)*limit, limit).Scan(&resultUser)
 		if err != nil {
 			logger.WebLog.Warningf(ctx, "用户管理分页查询 数据库错误:%s", err.Error())
@@ -133,7 +134,6 @@ func (s *serviceUser) SearchUser(ctx context.Context, page, limit int, search in
 	for i := range resultUser {
 		resultUser[i].Password = ""
 		index++
-		resultUser[i].Id = index
 	}
 	return &model.UserRspManager{Code: 0, Msg: "ok", Count: int64(count), Data: resultUser}
 }

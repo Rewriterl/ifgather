@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Rewriterl/ifgather/internal/dao"
-	_ "github.com/Rewriterl/ifgather/utility/pqsql"
+	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/test/gtest"
 	"testing"
@@ -26,7 +26,7 @@ func TestUsersDaoModify(t *testing.T) {
 
 func TestUsersDao(t *testing.T) {
 	gtest.C(t, func(t *gtest.T) {
-		one, err := dao.Users.Ctx(context.Background()).One("username = ?", "admin")
+		one, err := dao.Users.Ctx(context.Background()).One("username = ?", "test")
 		gtest.AssertEQ(err, nil)
 		s := fmt.Sprintf("%+v", one)
 		fmt.Println(s)
