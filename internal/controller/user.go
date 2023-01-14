@@ -80,7 +80,7 @@ func (a *apiUser) DelUser(r *ghttp.Request) {
 	if err := service.User.UserDel(r.Context(), data); err != nil {
 		response.JsonExit(r, 202, err.Error())
 	} else {
-		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "删除用户", fmt.Sprintf("删除用户 [%s]", data.Username))
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "删除用户", fmt.Sprintf("删除ID为 [%s] 的用户", data.Id))
 		response.JsonExit(r, 200, "ok")
 	}
 }

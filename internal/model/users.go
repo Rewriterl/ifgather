@@ -31,7 +31,7 @@ type UsersApiRegisterReq struct {
 
 // 删除用户所需信息
 type UserApiDelReq struct {
-	Username string `v:"required|length:4,20#账号不能为空|账号长度应当在:min到:max之间"`
+	Id string `v:"required"`
 }
 
 // 修改密码所需信息

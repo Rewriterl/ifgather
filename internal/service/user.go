@@ -197,11 +197,17 @@ func (s *serviceUser) ChangePassword(ctx context.Context, r *model.UserApiChange
 }
 
 func (s *serviceUser) UserDel(ctx context.Context, r *model.UserApiDelReq) error {
-	if r.Username == "admin" {
-		return errors.New("删除用户失败:不能删除admin内置账户")
-	}
-	result, err := dao.Users.Ctx(ctx).Delete("username=?", r.Username)
+	one, err2 := dao.Users.Ctx(ctx).One("id=?", r.Id)
 	returnErr := errors.New("删除用户失败")
+	if err2 != nil {
+		logger.WebLog.Warning(ctx, "要删除的用户不存在")
+		return returnErr
+	}
+	user, _ := TransToUser(one)
+	if user.Username == "admin" {
+		return errors.New("删除用户失败 不能删除admin账户")
+	}
+	result, err := dao.Users.Ctx(ctx).Delete("id=?", r.Id)
 	if err != nil {
 		logger.WebLog.Warningf(ctx, "删除用户 数据库错误:%s", err.Error())
 		return returnErr
