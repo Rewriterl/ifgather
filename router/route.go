@@ -23,5 +23,9 @@ func init() {
 			group.GET("/", controller.Users.UserInfo)
 			group.POST("/logout", controller.Users.LoginOut)
 		})
+		group.Group("/users", func(group *ghttp.RouterGroup) {
+			group.Middleware(service.Middleware.Auth)
+			group.GET("/", controller.Users.SearchUser)
+		})
 	})
 }

@@ -33,3 +33,7 @@ func (a *apiUser) LoginOut(r *ghttp.Request) {
 	}
 	response.JsonExit(r, 200, "ok")
 }
+
+func (a *apiUser) SearchUser(r *ghttp.Request) {
+	r.Response.WriteJson(service.User.SearchUser(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}

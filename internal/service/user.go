@@ -8,7 +8,9 @@ import (
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/logger"
 	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gconv"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -94,4 +96,42 @@ func (s *serviceUser) AddUserOptLog(ctx context.Context, ip, Theme, Content stri
 		return
 	}
 	logger.WebLog.Infof(ctx, "用户操作 %s %s", Theme, Content)
+}
+
+func (s *serviceUser) SearchUser(ctx context.Context, page, limit int, search interface{}) *model.UserRspManager {
+	var resultUser []*model.Users
+	UserSearch := dao.Users.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("username")) != "" {
+			UserSearch = UserSearch.Where("username like ?", "%"+gconv.String(j.Get("username"))+"%")
+		}
+		if gconv.String(j.Get("phone")) != "" {
+			UserSearch = UserSearch.Where("phone like ?", "%"+gconv.String(j.Get("phone"))+"%")
+		}
+		if gconv.String(j.Get("email")) != "" {
+			UserSearch = UserSearch.Where("email like ?", "%"+gconv.String(j.Get("email"))+"%")
+		}
+		if gconv.String(j.Get("nickname")) != "" {
+			UserSearch = UserSearch.Where("nick_name like ?", "%"+gconv.String(j.Get("nickname"))+"%")
+		}
+	}
+	count, _ := UserSearch.Count()
+	if page > 0 && limit > 0 {
+		err := UserSearch.Order("id desc").Limit((page-1)*limit, limit).Scan(&resultUser)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "用户管理分页查询 数据库错误:%s", err.Error())
+			return &model.UserRspManager{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.UserRspManager{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	index := (page - 1) * limit
+	for i, _ := range resultUser {
+		resultUser[i].Password = ""
+		index++
+		resultUser[i].Id = index
+	}
+	return &model.UserRspManager{Code: 0, Msg: "ok", Count: int64(count), Data: resultUser}
 }
