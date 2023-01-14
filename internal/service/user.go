@@ -236,3 +236,73 @@ func (s *serviceUser) SetUserInfo(ctx context.Context, r *model.UserApiSetInfoRe
 		return nil
 	}
 }
+
+func (s *serviceUser) SearchUserLoginLogs(ctx context.Context, page, limit int, search interface{}) *model.UserOperationRespLogins {
+	var result []*model.UserLog
+	SearchModel := dao.UserLog.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		username := gconv.String(j.Get("username"))
+		if username != "" {
+			SearchModel = SearchModel.Where("username like ?", "%"+username+"%")
+		}
+		ip := gconv.String(j.Get("ip"))
+		if ip != "" {
+			SearchModel = SearchModel.Where("ip like ?", "%"+ip+"%")
+		}
+	}
+	count, _ := SearchModel.Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Order("id desc").Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "用户登录日志分页查询 数据库错误:%s", err.Error())
+			return &model.UserOperationRespLogins{Code: 201, Msg: "查询失败", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.UserOperationRespLogins{Code: 201, Msg: "查询失败", Count: 0, Data: nil}
+	}
+	index := (page - 1) * limit
+	for i := range result {
+		index++
+		result[i].Id = index
+	}
+	return &model.UserOperationRespLogins{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}
+
+func (s *serviceUser) SearchUserOperation(ctx context.Context, page, limit int, search interface{}) *model.UserOperationRespLogs {
+	var result []*model.UserOperation
+	SearchModel := dao.UserOperation.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		username := gconv.String(j.Get("username"))
+		if username != "" {
+			SearchModel = SearchModel.Where("username like ?", "%"+username+"%")
+		}
+		theme := gconv.String(j.Get("theme"))
+		if theme != "" {
+			SearchModel = SearchModel.Where("theme like ?", "%"+theme+"%")
+		}
+		content := gconv.String(j.Get("content"))
+		if content != "" {
+			SearchModel = SearchModel.Where("content like ?", "%"+content+"%")
+		}
+	}
+	count, _ := SearchModel.Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Order("id desc").Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "用户操作日志分页查询 数据库错误:%s", err.Error())
+			return &model.UserOperationRespLogs{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.UserOperationRespLogs{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	index := (page - 1) * limit
+	for i := range result {
+		index++
+		result[i].Id = index
+	}
+	return &model.UserOperationRespLogs{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}

@@ -97,3 +97,11 @@ func (a *apiUser) PatchUserInfo(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+func (a *apiUser) SearchUserLoginLogs(r *ghttp.Request) {
+	r.Response.WriteJson(service.User.SearchUserLoginLogs(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}
+
+func (a *apiUser) SearchUserOperation(r *ghttp.Request) {
+	r.Response.WriteJson(service.User.SearchUserOperation(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}

@@ -26,6 +26,8 @@ func init() {
 			group.PATCH("/", controller.Users.PatchUserInfo)
 			group.POST("/logout", controller.Users.LoginOut)
 			group.POST("/password", controller.Users.ChangePassword)
+			group.GET("/llogs", controller.Users.SearchUserLoginLogs)
+			group.GET("/optlogs", controller.Users.SearchUserOperation)
 		})
 		group.Group("/users", func(group *ghttp.RouterGroup) {
 			group.Middleware(service.Middleware.Auth)
