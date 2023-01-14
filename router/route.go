@@ -21,8 +21,9 @@ func init() {
 		group.Group("/user", func(group *ghttp.RouterGroup) {
 			group.Middleware(service.Middleware.Auth)
 			group.GET("/", controller.Users.UserInfo)
-			group.POST("/logout", controller.Users.LoginOut)
 			group.POST("/", controller.Users.AddUser)
+			group.POST("/logout", controller.Users.LoginOut)
+			group.POST("/password", controller.Users.ChangePassword)
 		})
 		group.Group("/users", func(group *ghttp.RouterGroup) {
 			group.Middleware(service.Middleware.Auth)

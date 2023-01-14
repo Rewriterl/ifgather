@@ -44,10 +44,24 @@ func (a *apiUser) AddUser(r *ghttp.Request) {
 	if err := r.Parse(&data); err != nil {
 		response.JsonExit(r, 201, err.Error())
 	}
-	if err := service.User.Register(r.Context(), data); err != nil {
+	if err := service.User.AddUser(r.Context(), data); err != nil {
 		response.JsonExit(r, 202, err.Error())
 	} else {
 		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "添加用户", fmt.Sprintf("添加[%s]用户", data.Username))
 		response.JsonExit(r, 200, "ok")
+	}
+}
+
+func (a *apiUser) ChangePassword(r *ghttp.Request) {
+	var data *model.UserApiChangePasswordReq
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.User.ChangePassword(r.Context(), data); err != nil {
+		response.JsonExit(r, 202, err.Error())
+	} else {
+		_ = service.User.Logout(r.Context())
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "密码修改", "修改成功")
+		response.JsonExit(r, 200, "密码修改成功，请重新登录")
 	}
 }

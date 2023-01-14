@@ -138,7 +138,7 @@ func (s *serviceUser) SearchUser(ctx context.Context, page, limit int, search in
 	return &model.UserRspManager{Code: 0, Msg: "ok", Count: int64(count), Data: resultUser}
 }
 
-func (s *serviceUser) Register(ctx context.Context, r *model.UsersApiRegisterReq) error {
+func (s *serviceUser) AddUser(ctx context.Context, r *model.UsersApiRegisterReq) error {
 	if i, err := dao.Users.Ctx(ctx).Count("username=?", r.Username); err != nil {
 		logger.WebLog.Warningf(ctx, "添加用户 数据库错误:%s", err.Error())
 		return errors.New("添加用户失败")
@@ -167,4 +167,31 @@ func (s *serviceUser) setPassword(password string) (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
+}
+
+func (s *serviceUser) ChangePassword(ctx context.Context, r *model.UserApiChangePasswordReq) error {
+	userinfo := Session.GetUser(ctx)
+	one, err := dao.Users.Ctx(ctx).One("username=?", userinfo.Username)
+	returnErr := errors.New("修改密码失败")
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "修改密码 数据库错误:%s", err.Error())
+		return returnErr
+	}
+	currentUser, _ := TransToUser(one)
+	if !s.checkPassword(currentUser.Password, r.Password) {
+		return returnErr
+	}
+	encPassword, err := s.setPassword(r.Password1)
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "修改密码 加密密码错误:%s", err.Error())
+		return returnErr
+	}
+	if result, err := dao.Users.Ctx(ctx).Update(g.Map{"password": encPassword}, "username", userinfo.Username); err != nil {
+		logger.WebLog.Warningf(ctx, "修改密码 数据库错误:%s", err.Error())
+		return returnErr
+	} else if result != nil {
+		return nil
+	} else {
+		return returnErr
+	}
 }
