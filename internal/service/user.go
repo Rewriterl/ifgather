@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/logger"
 	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/gogf/gf/v2/encoding/ghtml"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
@@ -128,10 +130,41 @@ func (s *serviceUser) SearchUser(ctx context.Context, page, limit int, search in
 		return &model.UserRspManager{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
 	}
 	index := (page - 1) * limit
-	for i, _ := range resultUser {
+	for i := range resultUser {
 		resultUser[i].Password = ""
 		index++
 		resultUser[i].Id = index
 	}
 	return &model.UserRspManager{Code: 0, Msg: "ok", Count: int64(count), Data: resultUser}
+}
+
+func (s *serviceUser) Register(ctx context.Context, r *model.UsersApiRegisterReq) error {
+	if i, err := dao.Users.Ctx(ctx).Count("username=?", r.Username); err != nil {
+		logger.WebLog.Warningf(ctx, "添加用户 数据库错误:%s", err.Error())
+		return errors.New("添加用户失败")
+	} else if i > 0 {
+		return errors.New(fmt.Sprintf("账户 %s 已存在", r.Username))
+	}
+	encPassword, err := s.setPassword(r.Password)
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "添加用户 密码加密失败:%s", err.Error())
+		return errors.New("添加用户失败,加密密码错误")
+	}
+	r.Password = encPassword
+	r.NickName = ghtml.SpecialChars(r.NickName)
+	r.Remark = ghtml.SpecialChars(r.Remark)
+	if _, err := dao.Users.Ctx(ctx).Insert(r); err != nil {
+		logger.WebLog.Warningf(ctx, "添加用户 数据库错误:%s", err.Error())
+		return errors.New("添加用户失败,数据库错误")
+	}
+	logger.WebLog.Warningf(ctx, "添加用户成功:%s", r.Username)
+	return nil
+}
+
+func (s *serviceUser) setPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }

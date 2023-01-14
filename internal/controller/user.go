@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/internal/service"
 	"github.com/Rewriterl/ifgather/utility/response"
@@ -36,4 +37,17 @@ func (a *apiUser) LoginOut(r *ghttp.Request) {
 
 func (a *apiUser) SearchUser(r *ghttp.Request) {
 	r.Response.WriteJson(service.User.SearchUser(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}
+
+func (a *apiUser) AddUser(r *ghttp.Request) {
+	var data *model.UsersApiRegisterReq
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.User.Register(r.Context(), data); err != nil {
+		response.JsonExit(r, 202, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "添加用户", fmt.Sprintf("添加[%s]用户", data.Username))
+		response.JsonExit(r, 200, "ok")
+	}
 }
