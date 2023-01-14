@@ -20,8 +20,9 @@ func init() {
 		group.POST("/login", controller.Users.Login)
 		group.Group("/user", func(group *ghttp.RouterGroup) {
 			group.Middleware(service.Middleware.Auth)
-			group.GET("/", controller.Users.UserInfo)
+			group.GET("/", controller.Users.GetUserInfo)
 			group.POST("/", controller.Users.AddUser)
+			group.DELETE("/", controller.Users.DelUser)
 			group.POST("/logout", controller.Users.LoginOut)
 			group.POST("/password", controller.Users.ChangePassword)
 		})

@@ -195,3 +195,25 @@ func (s *serviceUser) ChangePassword(ctx context.Context, r *model.UserApiChange
 		return returnErr
 	}
 }
+
+func (s *serviceUser) UserDel(ctx context.Context, r *model.UserApiDelReq) error {
+	if r.Username == "admin" {
+		return errors.New("删除用户失败:不能删除admin内置账户")
+	}
+	result, err := dao.Users.Ctx(ctx).Delete("username=?", r.Username)
+	returnErr := errors.New("删除用户失败")
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "删除用户 数据库错误:%s", err.Error())
+		return returnErr
+	}
+	if result != nil {
+		return nil
+	} else {
+		return returnErr
+	}
+}
+
+func (s *serviceUser) IsAdmin(ctx context.Context) bool {
+	userinfo := Session.GetUser(ctx)
+	return userinfo.Username == "admin"
+}

@@ -24,7 +24,7 @@ func (a *apiUser) Login(r *ghttp.Request) {
 	}
 }
 
-func (a *apiUser) UserInfo(r *ghttp.Request) {
+func (a *apiUser) GetUserInfo(r *ghttp.Request) {
 	response.JsonExit(r, 200, "ok", service.User.UserInfo(r.Context()))
 }
 func (a *apiUser) LoginOut(r *ghttp.Request) {
@@ -40,6 +40,9 @@ func (a *apiUser) SearchUser(r *ghttp.Request) {
 }
 
 func (a *apiUser) AddUser(r *ghttp.Request) {
+	if !service.User.IsAdmin(r.Context()) {
+		response.JsonExit(r, 201, "权限不足")
+	}
 	var data *model.UsersApiRegisterReq
 	if err := r.Parse(&data); err != nil {
 		response.JsonExit(r, 201, err.Error())
@@ -63,5 +66,21 @@ func (a *apiUser) ChangePassword(r *ghttp.Request) {
 		_ = service.User.Logout(r.Context())
 		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "密码修改", "修改成功")
 		response.JsonExit(r, 200, "密码修改成功，请重新登录")
+	}
+}
+
+func (a *apiUser) DelUser(r *ghttp.Request) {
+	if !service.User.IsAdmin(r.Context()) {
+		response.JsonExit(r, 201, "权限不足")
+	}
+	var data *model.UserApiDelReq
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.User.UserDel(r.Context(), data); err != nil {
+		response.JsonExit(r, 202, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "删除用户", fmt.Sprintf("删除用户 [%s]", data.Username))
+		response.JsonExit(r, 200, "ok")
 	}
 }
