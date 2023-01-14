@@ -130,10 +130,8 @@ func (s *serviceUser) SearchUser(ctx context.Context, page, limit int, search in
 	} else {
 		return &model.UserRspManager{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
 	}
-	index := (page - 1) * limit
 	for i := range resultUser {
 		resultUser[i].Password = ""
-		index++
 	}
 	return &model.UserRspManager{Code: 0, Msg: "ok", Count: int64(count), Data: resultUser}
 }
@@ -222,4 +220,19 @@ func (s *serviceUser) UserDel(ctx context.Context, r *model.UserApiDelReq) error
 func (s *serviceUser) IsAdmin(ctx context.Context) bool {
 	userinfo := Session.GetUser(ctx)
 	return userinfo.Username == "admin"
+}
+
+func (s *serviceUser) SetUserInfo(ctx context.Context, r *model.UserApiSetInfoReq) error {
+	r.Remark = ghtml.SpecialChars(r.Remark)
+	r.NickName = ghtml.SpecialChars(r.NickName)
+	result, err := dao.Users.Ctx(ctx).Update(r, "username", Session.GetUser(ctx).Username)
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "修改用户资料 数据库错误:%s", err.Error())
+		return errors.New("修改用户资料失败")
+	}
+	if result == nil {
+		return errors.New("修改用户资料失败,无此用户")
+	} else {
+		return nil
+	}
 }

@@ -84,3 +84,16 @@ func (a *apiUser) DelUser(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+func (a *apiUser) PatchUserInfo(r *ghttp.Request) {
+	var data *model.UserApiSetInfoReq
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.User.SetUserInfo(r.Context(), data); err != nil {
+		response.JsonExit(r, 202, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "资料修改", fmt.Sprintf("成功修改 [%s]", data.NickName))
+		response.JsonExit(r, 200, "ok")
+	}
+}
