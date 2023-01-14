@@ -81,3 +81,17 @@ func (s *serviceUser) UserInfo(ctx context.Context) *model.Users {
 func (s *serviceUser) Logout(ctx context.Context) error {
 	return Session.RemoveUser(ctx)
 }
+
+func (s *serviceUser) AddUserOptLog(ctx context.Context, ip, Theme, Content string) {
+	_, err := dao.UserOperation.Ctx(ctx).Insert(g.Map{
+		"Username": Session.GetUser(ctx).Username,
+		"Ip":       ip,
+		"Theme":    Theme,
+		"Content":  Content,
+	})
+	if err != nil {
+		logger.WebLog.Errorf(ctx, "保存日志出错 %s", err.Error())
+		return
+	}
+	logger.WebLog.Infof(ctx, "用户操作 %s %s", Theme, Content)
+}

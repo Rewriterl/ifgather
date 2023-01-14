@@ -26,3 +26,10 @@ func (a *apiUser) Login(r *ghttp.Request) {
 func (a *apiUser) UserInfo(r *ghttp.Request) {
 	response.JsonExit(r, 200, "ok", service.User.UserInfo(r.Context()))
 }
+func (a *apiUser) LoginOut(r *ghttp.Request) {
+	service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "注销用户", "注销成功")
+	if err := service.User.Logout(r.Context()); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	response.JsonExit(r, 200, "ok")
+}
