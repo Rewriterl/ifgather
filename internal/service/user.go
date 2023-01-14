@@ -65,3 +65,19 @@ func (s *serviceUser) saveLoginLog(ctx context.Context, username, ip, userAgent 
 		logger.WebLog.Warningf(ctx, "保存登录日志出现错误:%s", err.Error())
 	}
 }
+
+func (s *serviceUser) UserInfo(ctx context.Context) *model.Users {
+	user := Session.GetUser(ctx)
+	one, err := dao.Users.Ctx(ctx).One("username=?", user.Username)
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "获取用户资料 数据库错误:%s", err.Error())
+		return &model.Users{}
+	}
+	user1, err := TransToUser(one)
+	user1.Password = "********"
+	return user1
+}
+
+func (s *serviceUser) Logout(ctx context.Context) error {
+	return Session.RemoveUser(ctx)
+}

@@ -22,3 +22,7 @@ func (a *apiUser) Login(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+func (a *apiUser) UserInfo(r *ghttp.Request) {
+	response.JsonExit(r, 200, "ok", service.User.UserInfo(r.Context()))
+}

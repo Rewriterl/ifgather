@@ -18,5 +18,9 @@ func init() {
 	server.Group("/", func(group *ghttp.RouterGroup) {
 		group.Middleware(service.Middleware.Ctx)
 		group.POST("/login", controller.Users.Login)
+		group.Group("/user", func(group *ghttp.RouterGroup) {
+			group.Middleware(service.Middleware.Auth)
+			group.GET("/", controller.Users.UserInfo)
+		})
 	})
 }
