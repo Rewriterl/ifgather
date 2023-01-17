@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 	"github.com/Rewriterl/ifgather/utility/logger"
+	Gnsq "github.com/Rewriterl/ifgather/utility/nsq"
+	"github.com/Rewriterl/ifgather/utility/nsq/consumer/portscan"
+	"github.com/Rewriterl/ifgather/utility/nsq/producer"
 	"github.com/Rewriterl/ifgather/utility/nsq/pushmsg"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
@@ -15,8 +18,10 @@ var (
 		Usage: "main",
 		Brief: "start http server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
-			pushmsg.TimingPush(ctx)
 			logger.InitLogs()
+			producer.InitNsqProducer(ctx)
+			portscan.InitConsumer(ctx, Gnsq.RSubDomainTopic, Gnsq.RSubDomainChanl)
+			go pushmsg.TimingPush(ctx)
 			s := g.Server()
 			if err := s.SetConfigWithMap(g.Map{
 				"serverAgent":         "ifGather",

@@ -114,7 +114,7 @@ type statJson struct {
 
 // NsqStatsInfo 获取指定topic的Nsqd stats接口信息
 func NsqStatsInfo(ctx context.Context, topic string) (*statJson, error) {
-	url := fmt.Sprintf("http://%s/stats?format=json&topic=%s", g.Cfg().MustGet(ctx, "nsq.HttpHost").String(), topic)
+	url := fmt.Sprintf("http://%s/stats?format=json&topic=%s", g.Cfg().MustGet(ctx, "nsq.httpHost").String(), topic)
 	respone, err := g.Client().Timeout(10*time.Second).Get(ctx, url)
 	defer func() {
 		if respone != nil {
@@ -133,8 +133,8 @@ func NsqStatsInfo(ctx context.Context, topic string) (*statJson, error) {
 
 // EmptyNsqTopic 清空指定topic消息
 func EmptyNsqTopic(ctx context.Context, topicName, channelName string) error {
-	url := fmt.Sprintf("http://%s/channel/empty?topic=%s&channel=%s", g.Cfg().MustGet(ctx, "nsq.HttpHost").String(), topicName, channelName)
-	url1 := fmt.Sprintf("http://%s/topic/empty?topic=%s", g.Cfg().MustGet(ctx, "nsq.HttpHost").String(), topicName)
+	url := fmt.Sprintf("http://%s/channel/empty?topic=%s&channel=%s", g.Cfg().MustGet(ctx, "nsq.httpHost").String(), topicName, channelName)
+	url1 := fmt.Sprintf("http://%s/topic/empty?topic=%s", g.Cfg().MustGet(ctx, "nsq.httpHost").String(), topicName)
 	response1, _ := g.Client().Timeout(8*time.Second).Post(ctx, url)
 	respone, err := g.Client().Timeout(8*time.Second).Post(ctx, url1)
 	defer func() {
@@ -154,7 +154,8 @@ func EmptyNsqTopic(ctx context.Context, topicName, channelName string) error {
 // InitNsqProducer 初始化Nsq生产者
 func InitNsqProducer(ctx context.Context) {
 	config := nsq.NewConfig()
-	producer, err := nsq.NewProducer(g.Cfg().MustGet(ctx, "nsq.TcpHost").String(), config)
+	mustGet := g.Cfg().MustGet(ctx, "nsq.tcpHost")
+	producer, err := nsq.NewProducer(mustGet.String(), config)
 	if err != nil {
 		logger.WebLog.Fatalf(ctx, "[-] [生产者] 连接消息队列服务失败:%s", err.Error())
 	}
@@ -182,7 +183,7 @@ func SendTopicMessages(ctx context.Context, topicName string, msg []byte) {
 func headerNsq(ctx context.Context) {
 	for {
 		config := nsq.NewConfig()
-		producer, err := nsq.NewProducer(g.Cfg().MustGet(ctx, "nsq.TcpHost").String(), config)
+		producer, err := nsq.NewProducer(g.Cfg().MustGet(ctx, "nsq.tcpHost").String(), config)
 		if err != nil {
 			logger.WebLog.Debugf(ctx, "[-] [生产者] 重新连接消息队列服务失败:%s", err.Error())
 			time.Sleep(2 * time.Second)
