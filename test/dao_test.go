@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Rewriterl/ifgather/internal/dao"
+	"github.com/Rewriterl/ifgather/utility/ipquery"
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/test/gtest"
@@ -39,5 +40,14 @@ func TestReadConfig(t *testing.T) {
 		s := fmt.Sprintf("%+v", mustGet)
 		fmt.Println(s)
 		//gtest.AssertEQ(err, nil)
+	})
+}
+
+func TestIpQuery(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		info, err := ipquery.QueryIp("20.205.243.166")
+		location := ipquery.QueryLocation(info)
+		fmt.Println(location)
+		gtest.AssertEQ(err, nil)
 	})
 }

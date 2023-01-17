@@ -10,6 +10,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gogf/gf/contrib/drivers/pgsql/v2 v2.3.0
 	github.com/gogf/gf/v2 v2.3.0
+	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20221229040330-76ac73d972ba // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
