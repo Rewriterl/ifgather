@@ -131,8 +131,8 @@ func NsqStatsInfo(ctx context.Context, topic string) (*statJson, error) {
 	return &jsondata, nil
 }
 
-// 清空指定topic消息
-func NsqTopicEmpty(ctx context.Context, topicName, channelName string) error {
+// EmptyNsqTopic 清空指定topic消息
+func EmptyNsqTopic(ctx context.Context, topicName, channelName string) error {
 	url := fmt.Sprintf("http://%s/channel/empty?topic=%s&channel=%s", g.Cfg().MustGet(ctx, "nsq.HttpHost").String(), topicName, channelName)
 	url1 := fmt.Sprintf("http://%s/topic/empty?topic=%s", g.Cfg().MustGet(ctx, "nsq.HttpHost").String(), topicName)
 	response1, _ := g.Client().Timeout(8*time.Second).Post(ctx, url)
@@ -151,8 +151,8 @@ func NsqTopicEmpty(ctx context.Context, topicName, channelName string) error {
 	return nil
 }
 
-// 初始化Nsq生产者
-func NsqInitProducer(ctx context.Context) {
+// InitNsqProducer 初始化Nsq生产者
+func InitNsqProducer(ctx context.Context) {
 	config := nsq.NewConfig()
 	producer, err := nsq.NewProducer(g.Cfg().MustGet(ctx, "nsq.TcpHost").String(), config)
 	if err != nil {
@@ -199,8 +199,8 @@ func headerNsq(ctx context.Context) {
 	}
 }
 
-// 子域名扫描 投递消息到消息队列
-func PubSubDomain(ctx context.Context, r []model.ScanDomainApiAddReq) {
+// PushSubDomain 子域名扫描 投递消息到消息队列
+func PushSubDomain(ctx context.Context, r []model.ScanDomainApiAddReq) {
 	for _, v := range r {
 		network := bytes.Buffer{}
 		enc := gob.NewEncoder(&network)
@@ -214,8 +214,8 @@ func PubSubDomain(ctx context.Context, r []model.ScanDomainApiAddReq) {
 	}
 }
 
-// 端口扫描 投递消息到消息队列
-func PortScanSendMessage(ctx context.Context, r []model.UtilPortScanApiAddReq) {
+// SendPortScanMessage 端口扫描 投递消息到消息队列
+func SendPortScanMessage(ctx context.Context, r []model.UtilPortScanApiAddReq) {
 	for _, v := range r {
 		network := bytes.Buffer{}
 		enc := gob.NewEncoder(&network)
@@ -229,8 +229,8 @@ func PortScanSendMessage(ctx context.Context, r []model.UtilPortScanApiAddReq) {
 	}
 }
 
-// web探测 投递消息到消息队列
-func PubWebInfo(ctx context.Context, r []model.NsqPushWeb) {
+// PushWebInfo web探测 投递消息到消息队列
+func PushWebInfo(ctx context.Context, r []model.NsqPushWeb) {
 	for _, v := range r {
 		network := bytes.Buffer{}
 		enc := gob.NewEncoder(&network)
