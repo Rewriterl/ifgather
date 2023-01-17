@@ -32,3 +32,12 @@ func TestUsersDao(t *testing.T) {
 		fmt.Println(s)
 	})
 }
+
+func TestReadConfig(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		get, err := g.Cfg().Get(context.Background(), "nsq.tcpHost")
+		s := fmt.Sprintf("%+v", get)
+		fmt.Println(s)
+		gtest.AssertEQ(err, nil)
+	})
+}

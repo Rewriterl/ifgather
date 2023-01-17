@@ -1,10 +1,14 @@
 package producer
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/logger"
+	Gnsq "github.com/Rewriterl/ifgather/utility/nsq"
 	"github.com/gogf/gf/v2/frame/g"
 	"time"
 
@@ -192,5 +196,50 @@ func headerNsq(ctx context.Context) {
 		logger.WebLog.Infof(ctx, "[+] [生产者] 重新连接消息队列成功")
 		NnsqProducer = producer
 		break
+	}
+}
+
+// 子域名扫描 投递消息到消息队列
+func PubSubDomain(ctx context.Context, r []model.ScanDomainApiAddReq) {
+	for _, v := range r {
+		network := bytes.Buffer{}
+		enc := gob.NewEncoder(&network)
+		err := enc.Encode(&v)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "[-] [子域名投递消息] gob序列化数据失败:%s", err.Error())
+			continue
+		}
+		SendTopicMessages(ctx, Gnsq.SubDomainTopic, network.Bytes())
+		time.Sleep(100 * time.Millisecond) // 延时下，防止太快push不上
+	}
+}
+
+// 端口扫描 投递消息到消息队列
+func PortScanSendMessage(ctx context.Context, r []model.UtilPortScanApiAddReq) {
+	for _, v := range r {
+		network := bytes.Buffer{}
+		enc := gob.NewEncoder(&network)
+		err := enc.Encode(&v)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "[-] [端口扫描投递消息] gob序列化数据失败:%s", err.Error())
+			continue
+		}
+		SendTopicMessages(ctx, Gnsq.PortScanTopic, network.Bytes())
+		time.Sleep(100 * time.Millisecond) // 延时下，防止太快push不上
+	}
+}
+
+// web探测 投递消息到消息队列
+func PubWebInfo(ctx context.Context, r []model.NsqPushWeb) {
+	for _, v := range r {
+		network := bytes.Buffer{}
+		enc := gob.NewEncoder(&network)
+		err := enc.Encode(&v)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "[-] [web探测投递消息] gob序列化数据失败:%s", err.Error())
+			continue
+		}
+		SendTopicMessages(ctx, Gnsq.WebInfoTopic, network.Bytes())
+		time.Sleep(100 * time.Millisecond) // 延时下，防止太快push不上
 	}
 }

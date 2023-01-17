@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"github.com/Rewriterl/ifgather/utility/logger"
+	"github.com/Rewriterl/ifgather/utility/nsq/pushmsg"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
 	"time"
@@ -14,6 +15,7 @@ var (
 		Usage: "main",
 		Brief: "start http server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
+			pushmsg.TimingPush(ctx)
 			logger.InitLogs()
 			s := g.Server()
 			if err := s.SetConfigWithMap(g.Map{
