@@ -5,6 +5,7 @@ import (
 	"github.com/Rewriterl/ifgather/utility/logger"
 	Gnsq "github.com/Rewriterl/ifgather/utility/nsq"
 	"github.com/Rewriterl/ifgather/utility/nsq/consumer/portscan"
+	"github.com/Rewriterl/ifgather/utility/nsq/consumer/subdomain"
 	"github.com/Rewriterl/ifgather/utility/nsq/producer"
 	"github.com/Rewriterl/ifgather/utility/nsq/pushmsg"
 	"github.com/gogf/gf/v2/frame/g"
@@ -20,7 +21,8 @@ var (
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
 			logger.InitLogs()
 			producer.InitNsqProducer(ctx)
-			portscan.InitConsumer(ctx, Gnsq.RSubDomainTopic, Gnsq.RSubDomainChanl)
+			subdomain.InitConsumer(ctx, Gnsq.RSubDomainTopic, Gnsq.RSubDomainChanl)
+			portscan.InitConsumer(ctx, Gnsq.RPortScanTopic, Gnsq.RPortScanChanl)
 			go pushmsg.TimingPush(ctx)
 			s := g.Server()
 			if err := s.SetConfigWithMap(g.Map{

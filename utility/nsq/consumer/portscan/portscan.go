@@ -38,7 +38,7 @@ func InitConsumer(ctx context.Context, topic string, channel string) {
 		Title: "server",
 	}
 	consumer.AddHandler(client)
-	cfg, _ := g.Cfg().Get(ctx, "nsq.tcpHost")
+	cfg := g.Cfg().MustGet(ctx, "nsq.tcpHost")
 	if err1 := consumer.ConnectToNSQD(cfg.String()); err1 != nil {
 		logger.WebLog.Fatalf(ctx, "[-] [端口扫描消费者] 连接消息队列服务失败:%s", err1.Error())
 	}
@@ -66,13 +66,13 @@ func (m *PortScanHandler) HandleMessage(msg *nsq.Message) error {
 		return nil
 	}
 	if strings.Contains(result[0].CusName, "util-") {
-		return utilPortScanPush(ctx, result)
+		return pushUtilPortScan(ctx, result)
 	}
-	return portScanPush(ctx, result)
+	return pushPortScan(ctx, result)
 }
 
-// portScanPush 处理端口扫描结果
-func portScanPush(ctx context.Context, r []Gnsq.ResponsePortScanStruct) error {
+// pushPortScan 处理端口扫描结果
+func pushPortScan(ctx context.Context, r []Gnsq.ResponsePortScanStruct) error {
 	time.Sleep(1 * time.Second)
 	count, err := dao.ScanPort.Ctx(ctx).Where("host=?", r[0].Host).Count()
 	if err != nil {
@@ -101,8 +101,8 @@ func portScanPush(ctx context.Context, r []Gnsq.ResponsePortScanStruct) error {
 	return nil
 }
 
-// utilPortScanPush 处理端口扫描结果
-func utilPortScanPush(ctx context.Context, r []Gnsq.ResponsePortScanStruct) error {
+// pushUtilPortScan 处理端口扫描结果
+func pushUtilPortScan(ctx context.Context, r []Gnsq.ResponsePortScanStruct) error {
 	time.Sleep(1 * time.Second)
 	CusName := r[0].CusName
 	CusName = strings.Replace(CusName, "util-", "", -1)
@@ -124,7 +124,7 @@ func utilPortScanPush(ctx context.Context, r []Gnsq.ResponsePortScanStruct) erro
 			return nil
 		}
 	}
-	for i, _ := range r {
+	for i := range r {
 		r[i].CusName = CusName
 	}
 	if _, err = dao.UtilPortscanResult.Ctx(ctx).Insert(r); err != nil { // 批量插入
