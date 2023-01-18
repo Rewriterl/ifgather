@@ -6,6 +6,7 @@ import (
 	Gnsq "github.com/Rewriterl/ifgather/utility/nsq"
 	"github.com/Rewriterl/ifgather/utility/nsq/consumer/portscan"
 	"github.com/Rewriterl/ifgather/utility/nsq/consumer/subdomain"
+	"github.com/Rewriterl/ifgather/utility/nsq/consumer/webinfo"
 	"github.com/Rewriterl/ifgather/utility/nsq/producer"
 	"github.com/Rewriterl/ifgather/utility/nsq/pushmsg"
 	"github.com/gogf/gf/v2/frame/g"
@@ -23,6 +24,7 @@ var (
 			producer.InitNsqProducer(ctx)
 			subdomain.InitConsumer(ctx, Gnsq.RSubDomainTopic, Gnsq.RSubDomainChanl)
 			portscan.InitConsumer(ctx, Gnsq.RPortScanTopic, Gnsq.RPortScanChanl)
+			webinfo.InitConsumer(ctx, Gnsq.RWebInfoTopic, Gnsq.RWebInfoChanl)
 			go pushmsg.TimingPush(ctx)
 			s := g.Server()
 			if err := s.SetConfigWithMap(g.Map{
