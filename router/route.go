@@ -36,6 +36,7 @@ func init() {
 		group.Group("/scan", func(group *ghttp.RouterGroup) {
 			group.Middleware(service.Middleware.Auth)
 			group.POST("/engine/apikey", controller.Scan.SetAPIKeyEngineNsq)
+			group.POST("/engine/portscan", controller.Scan.SetApiKeyEnginePortScan)
 		})
 	})
 }
