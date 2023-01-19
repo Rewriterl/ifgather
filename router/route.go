@@ -35,9 +35,10 @@ func init() {
 		})
 		group.Group("/scan", func(group *ghttp.RouterGroup) {
 			group.Middleware(service.Middleware.Auth)
-			group.POST("/engine/apikey", controller.Scan.SetAPIKeyEngineNsq)
-			group.POST("/engine/portscan", controller.Scan.SetApiKeyEnginePortScan)
-			group.POST("/engine/domain", controller.Scan.SetApiKeyEngineDomain)
+			group.POST("/engine/nsq", controller.Scan.SetNsqEngine)
+			group.POST("/engine/portscan", controller.Scan.SetPortScanEngine)
+			group.POST("/engine/domain", controller.Scan.SetDomainEngine)
+			group.POST("/engine/apikey", controller.Scan.SetApiKeyEngine)
 		})
 	})
 }

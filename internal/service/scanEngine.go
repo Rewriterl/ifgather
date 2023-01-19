@@ -14,8 +14,8 @@ var ScanEngine = new(serviceScanEngine)
 
 type serviceScanEngine struct{}
 
-// SetAPIKeyEngineNsq 扫描引擎 添加nsq地址
-func (s *serviceScanEngine) SetAPIKeyEngineNsq(ctx context.Context, r *model.APIKeyEngineNsqReq) error {
+// SetNsqEngine 扫描引擎 添加nsq地址
+func (s *serviceScanEngine) SetNsqEngine(ctx context.Context, r *model.APIKeyEngineNsqReq) error {
 	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_nsq").Count()
 	returnErr := errors.New("保存失败")
 	if err != nil {
@@ -41,8 +41,8 @@ func (s *serviceScanEngine) SetAPIKeyEngineNsq(ctx context.Context, r *model.API
 	return nil
 }
 
-// SetApiKeyEnginePortScan 扫描引擎 添加端口扫描
-func (s *serviceScanEngine) SetApiKeyEnginePortScan(ctx context.Context, r *model.ApiKeyEnginePortScanReq) error {
+// SetPortScanEngine 扫描引擎 添加端口扫描
+func (s *serviceScanEngine) SetPortScanEngine(ctx context.Context, r *model.ApiKeyEnginePortScanReq) error {
 	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_portscan").Count()
 	returnErr := errors.New("保存失败")
 	if err != nil {
@@ -68,8 +68,8 @@ func (s *serviceScanEngine) SetApiKeyEnginePortScan(ctx context.Context, r *mode
 	return nil
 }
 
-// SetApiKeyEngineDomain 扫描引擎 添加子域名
-func (s *serviceScanEngine) SetApiKeyEngineDomain(ctx context.Context, r *model.ApiKeyEngineDomainReq) error {
+// SetDomainEngine 扫描引擎 添加子域名
+func (s *serviceScanEngine) SetDomainEngine(ctx context.Context, r *model.ApiKeyEngineDomainReq) error {
 	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_domain").Count()
 	reurnErr := errors.New("保存失败")
 	if err != nil {
@@ -90,6 +90,33 @@ func (s *serviceScanEngine) SetApiKeyEngineDomain(ctx context.Context, r *model.
 		if _, err := dao.ApiKey.Ctx(ctx).Insert(g.Map{"key": "engine_domain", "value": jsonstr}); err != nil {
 			logger.WebLog.Warningf(ctx, "扫描引擎-子域名保存失败:%s", err.Error())
 			return reurnErr
+		}
+	}
+	return nil
+}
+
+// SetApiKeyEngine 扫描引擎 添加API秘钥
+func (s *serviceScanEngine) SetApiKeyEngine(ctx context.Context, r *model.ApiKeyEngineKeyReq) error {
+	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_apikey").Count()
+	returnErr := errors.New("保存失败,数据库错误")
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "扫描引擎-API秘钥查询失败:%s", err.Error())
+		return returnErr
+	}
+	jsonstr, err := gjson.New(r).ToJsonString()
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "扫描引擎-API秘钥序列化失败:%s", err.Error())
+		return returnErr
+	}
+	if count != 0 {
+		if _, err := dao.ApiKey.Ctx(ctx).Update(g.Map{"value": jsonstr}, "key", "engine_apikey"); err != nil {
+			logger.WebLog.Warningf(ctx, "扫描引擎-API秘钥更新失败:%s", err.Error())
+			return returnErr
+		}
+	} else {
+		if _, err := dao.ApiKey.Ctx(ctx).Insert(g.Map{"key": "engine_apikey", "value": jsonstr}); err != nil {
+			logger.WebLog.Warningf(ctx, "扫描引擎-API秘钥保存失败:%s", err.Error())
+			return returnErr
 		}
 	}
 	return nil
