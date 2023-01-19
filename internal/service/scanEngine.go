@@ -121,3 +121,30 @@ func (s *serviceScanEngine) SetApiKeyEngine(ctx context.Context, r *model.ApiKey
 	}
 	return nil
 }
+
+// SetWebInfoEngine 扫描引擎 添加Web探测
+func (s *serviceScanEngine) SetWebInfoEngine(ctx context.Context, r *model.ApiKeyEngineWebInfoReq) error {
+	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_webinfo").Count()
+	returnErr := errors.New("保存失败,数据库错误")
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "扫描引擎-web探测查询失败:%s", err.Error())
+		return returnErr
+	}
+	jsonstr, err := gjson.New(r).ToJsonString()
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "扫描引擎-web探测序列化失败:%s", err.Error())
+		return returnErr
+	}
+	if count != 0 {
+		if _, err := dao.ApiKey.Ctx(ctx).Update(g.Map{"value": jsonstr}, "key", "engine_webinfo"); err != nil {
+			logger.WebLog.Warningf(ctx, "扫描引擎-web探测更新失败:%s", err.Error())
+			return returnErr
+		}
+	} else {
+		if _, err := dao.ApiKey.Ctx(ctx).Insert(g.Map{"key": "engine_webinfo", "value": jsonstr}); err != nil {
+			logger.WebLog.Warningf(ctx, "扫描引擎-web探测保存失败:%s", err.Error())
+			return returnErr
+		}
+	}
+	return nil
+}

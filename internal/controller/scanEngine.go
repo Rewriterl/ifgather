@@ -75,3 +75,19 @@ func (a *apiScan) SetApiKeyEngine(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// SetWebInfoEngine 扫描引擎 添加Web探测
+func (a *apiScan) SetWebInfoEngine(r *ghttp.Request) {
+	var (
+		data *model.ApiKeyEngineWebInfoReq
+	)
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.ScanEngine.SetWebInfoEngine(r.Context(), data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "扫描引擎", "修改Web探测参数")
+		response.JsonExit(r, 200, "ok")
+	}
+}

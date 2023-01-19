@@ -39,6 +39,7 @@ func init() {
 			group.POST("/engine/portscan", controller.Scan.SetPortScanEngine)
 			group.POST("/engine/domain", controller.Scan.SetDomainEngine)
 			group.POST("/engine/apikey", controller.Scan.SetApiKeyEngine)
+			group.POST("/engine/webinfo", controller.Scan.SetWebInfoEngine)
 		})
 	})
 }
