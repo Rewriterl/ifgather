@@ -33,5 +33,9 @@ func init() {
 			group.Middleware(service.Middleware.Auth)
 			group.GET("/", controller.Users.SearchUser)
 		})
+		group.Group("/scan", func(group *ghttp.RouterGroup) {
+			group.Middleware(service.Middleware.Auth)
+			group.POST("/engine/apikey", controller.Scan.SetAPIKeyEngineNsq)
+		})
 	})
 }
