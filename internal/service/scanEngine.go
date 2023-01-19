@@ -67,3 +67,30 @@ func (s *serviceScanEngine) SetApiKeyEnginePortScan(ctx context.Context, r *mode
 	}
 	return nil
 }
+
+// SetApiKeyEngineDomain 扫描引擎 添加子域名
+func (s *serviceScanEngine) SetApiKeyEngineDomain(ctx context.Context, r *model.ApiKeyEngineDomainReq) error {
+	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_domain").Count()
+	reurnErr := errors.New("保存失败")
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "扫描引擎-子域名查询失败:%s", err.Error())
+		return reurnErr
+	}
+	jsonstr, err := gjson.New(r).ToJsonString()
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "扫描引擎-子域名序列化失败:%s", err.Error())
+		return reurnErr
+	}
+	if count != 0 {
+		if _, err := dao.ApiKey.Ctx(ctx).Update(g.Map{"value": jsonstr}, "key", "engine_domain"); err != nil {
+			logger.WebLog.Warningf(ctx, "扫描引擎-子域名更新失败:%s", err.Error())
+			return reurnErr
+		}
+	} else {
+		if _, err := dao.ApiKey.Ctx(ctx).Insert(g.Map{"key": "engine_domain", "value": jsonstr}); err != nil {
+			logger.WebLog.Warningf(ctx, "扫描引擎-子域名保存失败:%s", err.Error())
+			return reurnErr
+		}
+	}
+	return nil
+}

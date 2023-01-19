@@ -43,3 +43,19 @@ func (a *apiScan) SetApiKeyEnginePortScan(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// SetApiKeyEngineDomain 扫描引擎 添加子域名
+func (a *apiScan) SetApiKeyEngineDomain(r *ghttp.Request) {
+	var (
+		data *model.ApiKeyEngineDomainReq
+	)
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.ScanEngine.SetApiKeyEngineDomain(r.Context(), data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "扫描引擎", "修改子域名扫描参数")
+		response.JsonExit(r, 200, "ok")
+	}
+}
