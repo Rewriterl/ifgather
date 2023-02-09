@@ -40,6 +40,7 @@ func init() {
 			group.POST("/engine/domain", controller.Scan.SetDomainEngine)
 			group.POST("/engine/apikey", controller.Scan.SetApiKeyEngine)
 			group.POST("/engine/webinfo", controller.Scan.SetWebInfoEngine)
+			group.GET("/client/info", controller.Scan.GetApiKeyEngine)
 		})
 	})
 }

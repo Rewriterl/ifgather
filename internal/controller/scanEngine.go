@@ -5,7 +5,9 @@ import (
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/internal/service"
 	"github.com/Rewriterl/ifgather/utility/response"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 var Scan = new(apiScan)
@@ -89,5 +91,22 @@ func (a *apiScan) SetWebInfoEngine(r *ghttp.Request) {
 	} else {
 		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "扫描引擎", "修改Web探测参数")
 		response.JsonExit(r, 200, "ok")
+	}
+}
+
+func (a *apiScan) GetApiKeyEngine(r *ghttp.Request) {
+	pwd := gconv.String(r.Get("pwd"))
+	if pwd == "" {
+		response.JsonExit(r, 201, "请输入密码")
+	}
+	s, _ := g.Cfg().Get(r.Context(), "server.password")
+	password := s.String()
+	if password == "" {
+		response.JsonExit(r, 201, "Web未配置同步密码")
+	}
+	if pwd == password {
+		r.Response.WriteJson(service.ScanEngine.GetApiKeyEngine(r.Context()))
+	} else {
+		response.JsonExit(r, 201, "密码错误")
 	}
 }

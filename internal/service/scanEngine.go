@@ -2,12 +2,16 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
+	"github.com/Rewriterl/ifgather/utility/banalyze"
 	"github.com/Rewriterl/ifgather/utility/logger"
+	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/util/gconv"
 )
 
 var ScanEngine = new(serviceScanEngine)
@@ -147,4 +151,113 @@ func (s *serviceScanEngine) SetWebInfoEngine(ctx context.Context, r *model.ApiKe
 		}
 	}
 	return nil
+}
+
+// GetApiKeyEngine 扫描引擎 输出配置
+func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKeyEngine {
+	result := model.ResApiKeyEngine{}
+
+	one, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_nsq").One()
+	jsonNsq, err := TransToApiKey(one)
+	if err == nil && jsonNsq != nil {
+		j, err := gjson.DecodeToJson(jsonNsq.Value)
+		structs := model.APIKeyEngineNsqReq{}
+		if err == nil {
+			err := gconv.Struct(j, &structs)
+			if err == nil {
+				result.Nsq = structs
+			}
+		}
+	}
+	one, err = dao.ApiKey.Ctx(ctx).Where("key=?", "engine_portscan").One()
+	jsonPortScan, err := TransToApiKey(one)
+	if err == nil && jsonPortScan != nil {
+		j, err := gjson.DecodeToJson(jsonPortScan.Value)
+		structs := model.ApiKeyEnginePortScanReq{}
+		if err == nil {
+			err = gconv.Struct(j, &structs)
+			if err == nil {
+				result.PortScan = structs
+			}
+		}
+	}
+	one, err = dao.ApiKey.Ctx(ctx).Where("key=?", "engine_domain").One()
+	jsonDomain, err := TransToApiKey(one)
+	if err == nil && jsonDomain != nil {
+		j, err := gjson.DecodeToJson(jsonDomain.Value)
+		structs := model.ApiKeyEngineDomainReq{}
+		if err == nil {
+			err = gconv.Struct(j, &structs)
+			if err == nil {
+				result.Domain = structs
+			}
+		}
+	}
+	one, err = dao.ApiKey.Ctx(ctx).Where("key=?", "engine_apikey").One()
+	jsonApiKey, err := TransToApiKey(one)
+	if err == nil && jsonApiKey != nil {
+		j, err := gjson.DecodeToJson(jsonApiKey.Value)
+		structs := model.ApiKeyEngineKeyReq{}
+		if err == nil {
+			err = gconv.Struct(j, &structs)
+			if err == nil {
+				structs.Binaryedge = "******"
+				structs.CensysSecret = "******"
+				structs.CensysToken = "******"
+				structs.Certspotter = "******"
+				structs.GitHub = "******"
+				structs.Shodan = "******"
+				structs.Spyse = "******"
+				structs.URLScan = "******"
+				structs.ThreatBook = "******"
+				structs.Virustotal = "******"
+				structs.Securitytrails = "******"
+				result.ApiKey = structs
+			}
+		}
+	}
+
+	one, err = dao.ApiKey.Ctx(ctx).Where("key=?", "engine_webinfo").One()
+	jsonWebInfo, err := TransToApiKey(one)
+	if err == nil && jsonWebInfo != nil {
+		j, err := gjson.DecodeToJson(jsonWebInfo.Value)
+		structs := model.ApiKeyEngineWebInfoReq{}
+		if err == nil {
+			err = gconv.Struct(j, &structs)
+			if err == nil {
+				result.WebInfo = structs
+			}
+		}
+	}
+	all, err := dao.Banalyze.Ctx(ctx).Where("1=?", 1).All()
+	jsonBanalyze, err := TransToBanalyze(all)
+	if err == nil && jsonBanalyze != nil {
+		var exportData []*banalyze.App
+		for _, v := range jsonBanalyze {
+			jsonList, err := banalyze.LoadApps([]byte(v.Value))
+			if err != nil {
+				continue
+			}
+			exportData = append(exportData, jsonList.Apps[0])
+		}
+		result.Banalyze = exportData
+	}
+
+	return &result
+}
+
+func TransToApiKey(one gdb.Record) (*model.ApiKey, error) {
+	var apikey *model.ApiKey
+	if err := one.Struct(&apikey); err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	return apikey, nil
+}
+
+func TransToBanalyze(all gdb.Result) ([]*model.Banalyze, error) {
+	var banalyzes []*model.Banalyze
+	if err := all.Structs(&banalyzes); err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	return banalyzes, nil
 }
