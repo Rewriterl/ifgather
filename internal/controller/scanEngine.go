@@ -172,3 +172,8 @@ func (a *apiScan) ManagerDelete(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// SearchManager 厂商模糊搜索分页查询
+func (a *apiScan) SearchManager(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.SearchManager(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}

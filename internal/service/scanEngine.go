@@ -310,6 +310,49 @@ func (s *serviceScanEngine) ManagerDelete(ctx context.Context, r *model.ApiScanM
 	return nil
 }
 
+// SearchManager 厂商模糊搜索分页查询
+func (s *serviceScanEngine) SearchManager(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanManager {
+	var (
+		result []*model.ScanHome
+	)
+	SearchModel := dao.ScanHome.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("CusName")) != "" {
+			SearchModel = SearchModel.Where("cus_name like ?", "%"+gconv.String(j.Get("CusName"))+"%")
+		}
+	}
+	count, _ := SearchModel.Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Order("id desc").Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "厂商管理分页查询 数据库错误:%s", err.Error())
+			return &model.ResAPiScanManager{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.ResAPiScanManager{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	index := (page - 1) * limit
+	results := make([]model.ResAPiScanManagerInfo, 0)
+	for i, _ := range result {
+		index++
+		result[i].Id = index
+		subCount, _ := dao.ScanSubdomain.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
+		portCount, _ := dao.ScanPort.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
+		urlCount, _ := dao.ScanWeb.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
+		results = append(results, model.ResAPiScanManagerInfo{
+			Id:              index,
+			CusName:         result[i].CusName,
+			CusTime:         result[i].CreateAt,
+			CusSudDomainNum: subCount,
+			CusPortNum:      portCount,
+			CusWebNum:       urlCount,
+		})
+	}
+	return &model.ResAPiScanManager{Code: 0, Msg: "ok", Count: int64(count), Data: results}
+}
+
 func TransToApiKey(one gdb.Record) (*model.ApiKey, error) {
 	var apikey *model.ApiKey
 	if err := one.Struct(&apikey); err != nil && err != sql.ErrNoRows {
