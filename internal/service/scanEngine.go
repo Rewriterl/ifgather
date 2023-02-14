@@ -8,6 +8,8 @@ import (
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/banalyze"
 	"github.com/Rewriterl/ifgather/utility/logger"
+	Gnsq "github.com/Rewriterl/ifgather/utility/nsq"
+	"github.com/Rewriterl/ifgather/utility/nsq/producer"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
@@ -244,6 +246,21 @@ func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 	}
 
 	return &result
+}
+
+// EmptyPort 端口扫描清空消息队列
+func (s *serviceScanEngine) EmptyPort(ctx context.Context) error {
+	return producer.EmptyNsqTopic(ctx, Gnsq.PortScanTopic, Gnsq.PortScanTopicChanl)
+}
+
+// EmptyDomain 子域名清空消息队列
+func (s *serviceScanEngine) EmptyDomain(ctx context.Context) error {
+	return producer.EmptyNsqTopic(ctx, Gnsq.SubDomainTopic, Gnsq.SubDomainChanl)
+}
+
+// EmptyWebInfo Web探测清空消息队列
+func (s *serviceScanEngine) EmptyWebInfo(ctx context.Context) error {
+	return producer.EmptyNsqTopic(ctx, Gnsq.WebInfoTopic, Gnsq.RWebInfoChanl)
 }
 
 func TransToApiKey(one gdb.Record) (*model.ApiKey, error) {

@@ -110,3 +110,33 @@ func (a *apiScan) GetApiKeyEngine(r *ghttp.Request) {
 		response.JsonExit(r, 201, "密码错误")
 	}
 }
+
+// EmptyPort 端口扫描清空消息队列
+func (a *apiScan) EmptyPort(r *ghttp.Request) {
+	if err := service.ScanEngine.EmptyPort(r.Context()); err != nil {
+		response.JsonExit(r, 201, "清空端口扫描任务队列失败")
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "端口扫描", "清空消息队列成功")
+		response.JsonExit(r, 200, "ok")
+	}
+}
+
+// EmptyDomain 子域名清空消息队列
+func (a *apiScan) EmptyDomain(r *ghttp.Request) {
+	if err := service.ScanEngine.EmptyDomain(r.Context()); err != nil {
+		response.JsonExit(r, 201, "清空子域名扫描任务队列失败")
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "子域名扫描", "清空消息队列成功")
+		response.JsonExit(r, 200, "ok")
+	}
+}
+
+// EmptyWebInfo Web探测清空消息队列
+func (a *apiScan) EmptyWebInfo(r *ghttp.Request) {
+	if err := service.ScanEngine.EmptyWebInfo(r.Context()); err != nil {
+		response.JsonExit(r, 201, "清空Web探测任务队列失败")
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "Web探测", "清空消息队列成功")
+		response.JsonExit(r, 200, "ok")
+	}
+}
