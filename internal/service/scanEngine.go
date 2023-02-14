@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/banalyze"
@@ -277,6 +278,34 @@ func (s *serviceScanEngine) ManagerAdd(ctx context.Context, r *model.ApiScanMana
 	if err != nil {
 		logger.WebLog.Warningf(ctx, "综合扫描-添加厂商失败:%s", err.Error())
 		return errors.New("添加厂商失败,数据库错误")
+	}
+	return nil
+}
+
+// ManagerDelete 删除厂商
+func (s *serviceScanEngine) ManagerDelete(ctx context.Context, r *model.ApiScanManagerDeleteReq) error {
+	count, err := dao.ScanHome.Ctx(ctx).Where("cus_name=?", r.CusName).Count()
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "综合扫描-删除厂商失败:%s", err.Error())
+		return errors.New("删除厂商失败,数据库错误")
+	}
+	if count == 0 {
+		return errors.New("删除厂商失败,该厂商不存在")
+	}
+	if _, err = dao.ScanHome.Ctx(ctx).Where("cus_name=?", r.CusName).Delete(); err != nil {
+		return errors.New(fmt.Sprintf("删除厂商失败:%s", err.Error()))
+	}
+	if _, err = dao.ScanDomain.Ctx(ctx).Where("cus_name=?", r.CusName).Delete(); err != nil {
+		return errors.New(fmt.Sprintf("删除厂商失败:%s", err.Error()))
+	}
+	if _, err = dao.ScanSubdomain.Ctx(ctx).Where("cus_name=?", r.CusName).Delete(); err != nil {
+		return errors.New(fmt.Sprintf("删除厂商失败:%s", err.Error()))
+	}
+	if _, err = dao.ScanPort.Ctx(ctx).Where("cus_name=?", r.CusName).Delete(); err != nil {
+		return errors.New(fmt.Sprintf("删除厂商失败:%s", err.Error()))
+	}
+	if _, err = dao.ScanWeb.Ctx(ctx).Where("cus_name=?", r.CusName).Delete(); err != nil {
+		return errors.New(fmt.Sprintf("删除厂商失败:%s", err.Error()))
 	}
 	return nil
 }

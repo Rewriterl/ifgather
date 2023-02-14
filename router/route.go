@@ -45,6 +45,7 @@ func init() {
 			group.DELETE("/engine/emptyport", controller.Scan.EmptyPort)
 			group.DELETE("/engine/emptywebinfo", controller.Scan.EmptyWebInfo)
 			group.POST("/manager", controller.Scan.ManagerAdd)
+			group.DELETE("/manager", controller.Scan.ManagerDelete)
 		})
 	})
 }
