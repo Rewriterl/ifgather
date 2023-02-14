@@ -140,3 +140,19 @@ func (a *apiScan) EmptyWebInfo(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// ManagerAdd 添加厂商
+func (a *apiScan) ManagerAdd(r *ghttp.Request) {
+	var (
+		data *model.ApiScanManagerAddReq
+	)
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.ScanEngine.ManagerAdd(r.Context(), data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "添加厂商", fmt.Sprintf("厂商名[%s]", data.CusName))
+		response.JsonExit(r, 200, "ok")
+	}
+}

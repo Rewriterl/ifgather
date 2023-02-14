@@ -263,6 +263,24 @@ func (s *serviceScanEngine) EmptyWebInfo(ctx context.Context) error {
 	return producer.EmptyNsqTopic(ctx, Gnsq.WebInfoTopic, Gnsq.RWebInfoChanl)
 }
 
+// ManagerAdd 添加厂商
+func (s *serviceScanEngine) ManagerAdd(ctx context.Context, r *model.ApiScanManagerAddReq) error {
+	count, err := dao.ScanHome.Ctx(ctx).Where("cus_name=?", r.CusName).Count()
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "综合扫描-添加厂商失败:%s", err.Error())
+		return errors.New("添加厂商失败,数据库错误")
+	}
+	if count > 0 {
+		return errors.New("添加厂商失败,已存在该厂商")
+	}
+	_, err = dao.ScanHome.Ctx(ctx).Insert(r)
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "综合扫描-添加厂商失败:%s", err.Error())
+		return errors.New("添加厂商失败,数据库错误")
+	}
+	return nil
+}
+
 func TransToApiKey(one gdb.Record) (*model.ApiKey, error) {
 	var apikey *model.ApiKey
 	if err := one.Struct(&apikey); err != nil && err != sql.ErrNoRows {
