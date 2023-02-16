@@ -6,13 +6,10 @@ import (
 	"github.com/Rewriterl/ifgather/internal/cmd"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
-	"github.com/Rewriterl/ifgather/internal/service"
 	"github.com/Rewriterl/ifgather/utility/ipquery"
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
-	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/test/gtest"
-	"github.com/gogf/gf/v2/util/gconv"
 	"regexp"
 	"testing"
 )
@@ -73,21 +70,15 @@ func TestPasswd(t *testing.T) {
 	})
 }
 
-func TestApiKey(t *testing.T) {
+func TestCheckDomain(t *testing.T) {
 	gtest.C(t, func(t *gtest.T) {
-		one, err := dao.ApiKey.Ctx(context.Background()).Where("key=?", "engine_nsq").One()
+		domain := model.ScanDomainApiAddReq{
+			CusName: "test",
+		}
+		err := g.Validator().Data(domain).Run(context.Background())
 		if err != nil {
+			fmt.Println(err.Error())
 			return
 		}
-		structs := model.APIKeyEngineNsqReq{}
-		apiKey, err := service.TransToApiKey(one)
-		fmt.Printf("%+v\n", apiKey)
-		json, err := gjson.DecodeToJson(apiKey.Value)
-		fmt.Printf("%+v\n", json)
-		err = gconv.Struct(json, &structs)
-		if err != nil {
-			return
-		}
-		fmt.Printf("%+v", structs.NsqHost)
 	})
 }

@@ -3,15 +3,14 @@ package webinfo
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/dnsprobe"
 	"github.com/Rewriterl/ifgather/utility/ipquery"
 	"github.com/Rewriterl/ifgather/utility/logger"
+	"github.com/Rewriterl/ifgather/utility/tools"
 	"github.com/gogf/gf/v2/container/gset"
-	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/encoding/gbase64"
 	"github.com/gogf/gf/v2/frame/g"
 	"strings"
@@ -119,7 +118,8 @@ func pushWebInfo(ctx context.Context, s *SendMessageStruct) error {
 		if one == nil {
 			return nil
 		}
-		scanPort, _ := TransToScanPort(one)
+		var scanPort *model.ScanPort
+		_ = tools.TransToStruct(one, scanPort)
 		if !scanPort.Flag {
 			_, err1 := dao.ScanPort.Ctx(ctx).Where("cus_name=? AND host=? AND nsq_flag=?", s.CusName, s.Host, true).Update(g.Map{"flag": true}) // 更改端口web探测状态
 			if err1 != nil {
@@ -269,11 +269,4 @@ func pushWebInfo(ctx context.Context, s *SendMessageStruct) error {
 		}
 	}
 	return nil
-}
-func TransToScanPort(one gdb.Record) (*model.ScanPort, error) {
-	var scanPort *model.ScanPort
-	if err := one.Struct(&scanPort); err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	return scanPort, nil
 }

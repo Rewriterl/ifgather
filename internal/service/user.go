@@ -2,13 +2,12 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/logger"
-	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/Rewriterl/ifgather/utility/tools"
 	"github.com/gogf/gf/v2/encoding/ghtml"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
@@ -27,7 +26,8 @@ func (s *serviceUser) Login(ctx context.Context, r *model.UsersApiLoginReq, ip, 
 		logger.WebLog.Warningf(ctx, "[%s] 用户 [%s] 登录失败", ip, r.Username)
 		return returnErr
 	}
-	user, err := TransToUser(one)
+	var user *model.Users
+	err = tools.TransToStruct(one, &user)
 	if !s.checkPassword(user.Password, r.Password) {
 		logger.WebLog.Debugf(ctx, "[%s] 用户 [%s] 登录失败", ip, r.Username)
 		return returnErr
@@ -56,14 +56,6 @@ func (s *serviceUser) IsSignedIn(ctx context.Context) bool {
 	return c != nil && c.User != nil
 }
 
-func TransToUser(one gdb.Record) (*model.Users, error) {
-	var user *model.Users
-	if err := one.Struct(&user); err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	return user, nil
-}
-
 func (s *serviceUser) saveLoginLog(ctx context.Context, username, ip, userAgent string) {
 	if _, err := dao.UserLog.Ctx(ctx).Insert(g.Map{"username": username, "ip": ip, "user_agent": userAgent}); err != nil {
 		logger.WebLog.Warningf(ctx, "保存登录日志出现错误:%s", err.Error())
@@ -77,7 +69,8 @@ func (s *serviceUser) UserInfo(ctx context.Context) *model.Users {
 		logger.WebLog.Warningf(ctx, "获取用户资料 数据库错误:%s", err.Error())
 		return &model.Users{}
 	}
-	user1, err := TransToUser(one)
+	var user1 *model.Users
+	err = tools.TransToStruct(one, &user1)
 	user1.Password = "********"
 	return user1
 }
@@ -175,7 +168,8 @@ func (s *serviceUser) ChangePassword(ctx context.Context, r *model.UserApiChange
 		logger.WebLog.Warningf(ctx, "修改密码 数据库错误:%s", err.Error())
 		return returnErr
 	}
-	currentUser, _ := TransToUser(one)
+	var currentUser *model.Users
+	_ = tools.TransToStruct(one, &currentUser)
 	if !s.checkPassword(currentUser.Password, r.Password) {
 		return returnErr
 	}
@@ -201,7 +195,8 @@ func (s *serviceUser) UserDel(ctx context.Context, r *model.UserApiDelReq) error
 		logger.WebLog.Warning(ctx, "要删除的用户不存在")
 		return returnErr
 	}
-	user, _ := TransToUser(one)
+	var user *model.Users
+	_ = tools.TransToStruct(one, &user)
 	if user.Username == "admin" {
 		return errors.New("删除用户失败 不能删除admin账户")
 	}
