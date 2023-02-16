@@ -345,7 +345,6 @@ func (s *serviceScanEngine) SearchManager(ctx context.Context, page, limit int, 
 	results := make([]model.ResAPiScanManagerInfo, 0)
 	for i, _ := range result {
 		index++
-		result[i].Id = index
 		subCount, _ := dao.ScanSubdomain.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
 		portCount, _ := dao.ScanPort.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
 		urlCount, _ := dao.ScanWeb.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
@@ -454,9 +453,8 @@ func (s *serviceScanEngine) SearchDomain(ctx context.Context, page, limit int, s
 		return &model.ResAPiScanDomain{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
 	}
 	index := (page - 1) * limit
-	for i, _ := range result {
+	for range result {
 		index++
-		result[i].Id = index
 	}
 	return &model.ResAPiScanDomain{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
