@@ -426,3 +426,37 @@ func (s *serviceScanEngine) AddDomain(ctx context.Context, r *model.ScanDomainAp
 	go pushmsg.PushDomain(ctx, r.CusName)
 	return nil
 }
+
+// SearchDomain 主域名模糊搜索分页查询
+func (s *serviceScanEngine) SearchDomain(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanDomain {
+	var (
+		result []*model.ScanDomain
+	)
+	SearchModel := dao.ScanDomain.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("CusName")) != "" {
+			SearchModel = SearchModel.Where("cus_name like ?", "%"+gconv.String(j.Get("CusName"))+"%")
+		}
+		if gconv.String(j.Get("Domain")) != "" {
+			SearchModel = SearchModel.Where("domain like ?", "%"+gconv.String(j.Get("Domain"))+"%")
+		}
+	}
+	count, _ := SearchModel.Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Order("id desc").Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "主域名管理分页查询 数据库错误:%s", err.Error())
+			return &model.ResAPiScanDomain{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.ResAPiScanDomain{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	index := (page - 1) * limit
+	for i, _ := range result {
+		index++
+		result[i].Id = index
+	}
+	return &model.ResAPiScanDomain{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}

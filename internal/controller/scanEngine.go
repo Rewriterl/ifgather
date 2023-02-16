@@ -193,3 +193,8 @@ func (a *apiScan) AddDomain(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// SearchDomain 主域名模糊搜索分页查询
+func (a *apiScan) SearchDomain(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.SearchDomain(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}
