@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/Rewriterl/ifgather/internal/dao"
@@ -11,9 +10,12 @@ import (
 	"github.com/Rewriterl/ifgather/utility/logger"
 	Gnsq "github.com/Rewriterl/ifgather/utility/nsq"
 	"github.com/Rewriterl/ifgather/utility/nsq/producer"
-	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/Rewriterl/ifgather/utility/nsq/pushmsg"
+	"github.com/Rewriterl/ifgather/utility/tools"
+	"github.com/gogf/gf/v2/container/gset"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
@@ -161,7 +163,8 @@ func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 	result := model.ResApiKeyEngine{}
 
 	one, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_nsq").One()
-	jsonNsq, err := TransToApiKey(one)
+	var jsonNsq *model.ApiKey
+	err = tools.TransToStruct(one, &jsonNsq)
 	if err == nil && jsonNsq != nil {
 		j, err := gjson.DecodeToJson(jsonNsq.Value)
 		structs := model.APIKeyEngineNsqReq{}
@@ -173,7 +176,8 @@ func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 		}
 	}
 	one, err = dao.ApiKey.Ctx(ctx).Where("key=?", "engine_portscan").One()
-	jsonPortScan, err := TransToApiKey(one)
+	var jsonPortScan *model.ApiKey
+	err = tools.TransToStruct(one, &jsonPortScan)
 	if err == nil && jsonPortScan != nil {
 		j, err := gjson.DecodeToJson(jsonPortScan.Value)
 		structs := model.ApiKeyEnginePortScanReq{}
@@ -185,7 +189,8 @@ func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 		}
 	}
 	one, err = dao.ApiKey.Ctx(ctx).Where("key=?", "engine_domain").One()
-	jsonDomain, err := TransToApiKey(one)
+	var jsonDomain *model.ApiKey
+	err = tools.TransToStruct(one, &jsonDomain)
 	if err == nil && jsonDomain != nil {
 		j, err := gjson.DecodeToJson(jsonDomain.Value)
 		structs := model.ApiKeyEngineDomainReq{}
@@ -197,7 +202,8 @@ func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 		}
 	}
 	one, err = dao.ApiKey.Ctx(ctx).Where("key=?", "engine_apikey").One()
-	jsonApiKey, err := TransToApiKey(one)
+	var jsonApiKey *model.ApiKey
+	err = tools.TransToStruct(one, &jsonApiKey)
 	if err == nil && jsonApiKey != nil {
 		j, err := gjson.DecodeToJson(jsonApiKey.Value)
 		structs := model.ApiKeyEngineKeyReq{}
@@ -221,7 +227,8 @@ func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 	}
 
 	one, err = dao.ApiKey.Ctx(ctx).Where("key=?", "engine_webinfo").One()
-	jsonWebInfo, err := TransToApiKey(one)
+	var jsonWebInfo *model.ApiKey
+	err = tools.TransToStruct(one, &jsonWebInfo)
 	if err == nil && jsonWebInfo != nil {
 		j, err := gjson.DecodeToJson(jsonWebInfo.Value)
 		structs := model.ApiKeyEngineWebInfoReq{}
@@ -233,10 +240,11 @@ func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 		}
 	}
 	all, err := dao.Banalyze.Ctx(ctx).Where("1=?", 1).All()
-	jsonBanalyze, err := TransToBanalyze(all)
-	if err == nil && jsonBanalyze != nil {
+	var banalyzes []*model.Banalyze
+	err = tools.TransToStructs(all, &banalyzes)
+	if err == nil && banalyzes != nil {
 		var exportData []*banalyze.App
-		for _, v := range jsonBanalyze {
+		for _, v := range banalyzes {
 			jsonList, err := banalyze.LoadApps([]byte(v.Value))
 			if err != nil {
 				continue
@@ -353,18 +361,68 @@ func (s *serviceScanEngine) SearchManager(ctx context.Context, page, limit int, 
 	return &model.ResAPiScanManager{Code: 0, Msg: "ok", Count: int64(count), Data: results}
 }
 
-func TransToApiKey(one gdb.Record) (*model.ApiKey, error) {
-	var apikey *model.ApiKey
-	if err := one.Struct(&apikey); err != nil && err != sql.ErrNoRows {
-		return nil, err
+// AddDomain 添加主域名
+func (s *serviceScanEngine) AddDomain(ctx context.Context, r *model.ScanDomainApiAddReq) error {
+	type ScanDomain struct {
+		Domain string `v:"domain#主域名不正确"`
 	}
-	return apikey, nil
-}
-
-func TransToBanalyze(all gdb.Result) ([]*model.Banalyze, error) {
-	var banalyzes []*model.Banalyze
-	if err := all.Structs(&banalyzes); err != nil && err != sql.ErrNoRows {
-		return nil, err
+	count, err := dao.ScanHome.Ctx(ctx).Where("cus_name=?", r.CusName).Count()
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "综合扫描-添加主域名失败:%s", err.Error())
+		return errors.New("添加主域名失败,数据库错误")
 	}
-	return banalyzes, nil
+	if count == 0 {
+		return errors.New("添加主域名失败,该厂商不存在")
+	}
+	strList := gstr.Split(r.Domain, "\n")
+	domainList := gset.NewStrSet()
+	returnErr := errors.New("添加主域名失败,无有效数据")
+	if len(strList) == 0 {
+		return returnErr
+	}
+	for _, tmp := range strList {
+		domain := gstr.Trim(tmp)
+		if domain == "" {
+			continue
+		}
+		if e := g.Validator().Data(ScanDomain{Domain: domain}).Run(ctx); e != nil { // 校检domain
+			return errors.New(e.Error())
+		}
+		domainList.Add(domain)
+	}
+	if domainList.Size() == 0 {
+		return returnErr
+	}
+	all, err := dao.ScanDomain.Ctx(ctx).Where("1=?", 1).All()
+	if err != nil {
+		return returnErr
+	}
+	var scanDomains []*model.ScanDomain
+	err = tools.TransToStructs(all, &scanDomains)
+	if err != nil {
+		return returnErr
+	}
+	for _, v := range scanDomains {
+		if domainList.ContainsI(v.Domain) {
+			domainList.Remove(v.Domain)
+		}
+	}
+	if domainList.Size() == 0 {
+		return returnErr
+	}
+	logger.WebLog.Debugf(ctx, "添加主域名成功，共:%d个 %+v", domainList.Size(), domainList.String())
+	for _, domain := range domainList.Slice() {
+		_, err = dao.ScanDomain.Ctx(ctx).Insert(g.Map{
+			"CusName": r.CusName,
+			"Domain":  domain,
+			"Flag":    false,
+			"NsqFlag": false,
+		})
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "添加主域名 插入数据库错误:%s", err.Error())
+			continue
+		}
+	}
+	go pushmsg.PushDomain(ctx, r.CusName)
+	return nil
 }

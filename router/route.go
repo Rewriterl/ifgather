@@ -47,6 +47,7 @@ func init() {
 			group.POST("/manager", controller.Scan.ManagerAdd)
 			group.DELETE("/manager", controller.Scan.ManagerDelete)
 			group.GET("/manager", controller.Scan.SearchManager)
+			group.POST("/domain", controller.Scan.AddDomain)
 		})
 	})
 }

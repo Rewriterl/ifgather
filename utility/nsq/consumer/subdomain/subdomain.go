@@ -2,13 +2,12 @@ package subdomain
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/ipquery"
 	"github.com/Rewriterl/ifgather/utility/logger"
-	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/Rewriterl/ifgather/utility/tools"
 	"github.com/gogf/gf/v2/encoding/gbase64"
 	"github.com/gogf/gf/v2/frame/g"
 	"strings"
@@ -74,7 +73,8 @@ func (m *Handler) HandleMessage(msg *nsq.Message) error {
 func pushSubDomain(ctx context.Context, r []Gnsq.ResponseSubDomainStruct) error {
 	time.Sleep(2 * time.Second)
 	res, err := dao.ScanDomain.Ctx(ctx).Where("domain=? AND nsq_flag=?", r[0].Domain, true).One()
-	sd, _ := TransToScanDomain(res)
+	var sd *model.ScanDomain
+	_ = tools.TransToStruct(res, &sd)
 	if err != nil {
 		logger.WebLog.Warningf(ctx, "[-] [子域名扫描] 查询主域名扫描状态失败:%s", err.Error())
 		return err
@@ -137,7 +137,8 @@ func pushUtilSubDomain(ctx context.Context, r []Gnsq.ResponseSubDomainStruct) er
 	if res == nil {
 		return nil
 	}
-	domain, _ := TransToUtilScanDomain(res)
+	var domain *model.UtilSubdomainTask
+	_ = tools.TransToStruct(res, &domain)
 	if domain.ScanNum < domain.DomainNum {
 		if _, err = dao.UtilSubdomainTask.Ctx(ctx).Update(g.Map{"scan_num": domain.ScanNum + 1}, "cus_name", CusName); err != nil {
 			logger.WebLog.Warningf(ctx, "[-] [Util-子域名扫描消费者] 修改已扫描数失败:%s", err.Error())
@@ -169,19 +170,4 @@ func pushUtilSubDomain(ctx context.Context, r []Gnsq.ResponseSubDomainStruct) er
 		return nil
 	}
 	return nil
-}
-func TransToScanDomain(one gdb.Record) (*model.ScanDomain, error) {
-	var scanDomain *model.ScanDomain
-	if err := one.Struct(&scanDomain); err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	return scanDomain, nil
-}
-
-func TransToUtilScanDomain(one gdb.Record) (*model.UtilSubdomainTask, error) {
-	var task *model.UtilSubdomainTask
-	if err := one.Struct(&task); err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	return task, nil
 }

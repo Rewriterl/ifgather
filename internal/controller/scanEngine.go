@@ -177,3 +177,19 @@ func (a *apiScan) ManagerDelete(r *ghttp.Request) {
 func (a *apiScan) SearchManager(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchManager(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
+
+// AddDomain 添加主域名
+func (a *apiScan) AddDomain(r *ghttp.Request) {
+	var (
+		data *model.ScanDomainApiAddReq
+	)
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.ScanEngine.AddDomain(r.Context(), data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "添加主域名", fmt.Sprintf("厂商名[%s]", data.CusName))
+		response.JsonExit(r, 200, "ok")
+	}
+}

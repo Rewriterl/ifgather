@@ -2,12 +2,11 @@ package portscan
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/logger"
-	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/Rewriterl/ifgather/utility/tools"
 	"github.com/gogf/gf/v2/encoding/gbase64"
 	"github.com/gogf/gf/v2/frame/g"
 	"strings"
@@ -114,7 +113,8 @@ func pushUtilPortScan(ctx context.Context, r []Gnsq.ResponsePortScanStruct) erro
 	if res == nil {
 		return nil
 	}
-	task, _ := TransToUPST(res)
+	var task *model.UtilPortscanTask
+	_ = tools.TransToStruct(res, &task)
 	if _, err = dao.UtilPortscanTask.Ctx(ctx).Update(g.Map{"scan_num": task.ScanNum + 1}, "cus_name", CusName); err != nil {
 		logger.WebLog.Warningf(ctx, "[-] [Util-端口扫描结果处理消费者] 修改已扫描数失败:%s", err.Error())
 		return err
@@ -132,12 +132,4 @@ func pushUtilPortScan(ctx context.Context, r []Gnsq.ResponsePortScanStruct) erro
 		return nil
 	}
 	return nil
-}
-
-func TransToUPST(one gdb.Record) (*model.UtilPortscanTask, error) {
-	var task *model.UtilPortscanTask
-	if err := one.Struct(&task); err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	return task, nil
 }
