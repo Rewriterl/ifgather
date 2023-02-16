@@ -198,3 +198,8 @@ func (a *apiScan) AddDomain(r *ghttp.Request) {
 func (a *apiScan) SearchDomain(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchDomain(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
+
+// GetApiCusName 返回厂商数据
+func (a *apiScan) GetApiCusName(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.GetApiCusName(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("cusname")))
+}

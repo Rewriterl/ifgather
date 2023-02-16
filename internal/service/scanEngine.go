@@ -341,15 +341,13 @@ func (s *serviceScanEngine) SearchManager(ctx context.Context, page, limit int, 
 	} else {
 		return &model.ResAPiScanManager{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
 	}
-	index := (page - 1) * limit
 	results := make([]model.ResAPiScanManagerInfo, 0)
 	for i, _ := range result {
-		index++
 		subCount, _ := dao.ScanSubdomain.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
 		portCount, _ := dao.ScanPort.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
 		urlCount, _ := dao.ScanWeb.Ctx(ctx).Where("cus_name=?", result[i].CusName).Count()
 		results = append(results, model.ResAPiScanManagerInfo{
-			Id:              index,
+			Id:              result[i].Id,
 			CusName:         result[i].CusName,
 			CusTime:         result[i].CreateAt,
 			CusSudDomainNum: subCount,
@@ -452,9 +450,27 @@ func (s *serviceScanEngine) SearchDomain(ctx context.Context, page, limit int, s
 	} else {
 		return &model.ResAPiScanDomain{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
 	}
-	index := (page - 1) * limit
-	for range result {
-		index++
-	}
 	return &model.ResAPiScanDomain{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}
+
+// GetApiCusName 返回Group厂商数据
+func (s *serviceScanEngine) GetApiCusName(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanCusNames {
+	var (
+		result []model.ScanHome
+	)
+	SearchModel := dao.ScanHome.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if searchStr != "" {
+		SearchModel = SearchModel.Where("cus_name like ?", "%"+searchStr+"%")
+	}
+	count, _ := SearchModel.Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Order("id desc").Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			return &model.ResAPiScanCusNames{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.ResAPiScanCusNames{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	return &model.ResAPiScanCusNames{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
