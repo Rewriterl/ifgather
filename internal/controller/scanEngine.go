@@ -241,3 +241,8 @@ func (a *apiScan) DelWebInfo(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// NsqPortScanStat 端口扫描管理 Nsqd详情
+func (a *apiScan) NsqPortScanStat(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.NsqPortScanStat(r.Context()))
+}
