@@ -246,3 +246,8 @@ func (a *apiScan) DelWebInfo(r *ghttp.Request) {
 func (a *apiScan) NsqPortScanStat(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.NsqPortScanStat(r.Context()))
 }
+
+// NsqSubDomainStat 子域名扫描管理 Nsqd详情
+func (a *apiScan) NsqSubDomainStat(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.NsqSubDomainStat(r.Context()))
+}

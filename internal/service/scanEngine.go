@@ -318,6 +318,11 @@ func (s *serviceScanEngine) NsqPortScanStat(ctx context.Context) *model.NsqResIn
 	return s.getNsqResInfo(ctx, Gnsq.PortScanTopic, Gnsq.PortScanTopicChanl)
 }
 
+// NsqSubDomainStat 子域名管理 Nsqd详情
+func (s *serviceScanEngine) NsqSubDomainStat(ctx context.Context) *model.NsqResInfo {
+	return s.getNsqResInfo(ctx, Gnsq.SubDomainTopic, Gnsq.SubDomainChanl)
+}
+
 // ManagerAdd 添加厂商
 func (s *serviceScanEngine) ManagerAdd(ctx context.Context, r *model.ApiScanManagerAddReq) error {
 	count, err := dao.ScanHome.Ctx(ctx).Where("cus_name=?", r.CusName).Count()
