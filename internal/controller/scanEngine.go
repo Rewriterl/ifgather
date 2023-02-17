@@ -213,3 +213,8 @@ func (a *apiScan) SearchSubDomain(r *ghttp.Request) {
 func (a *apiScan) SearchPortScan(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchPortScan(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
+
+// SearchWebInfo Web信息模糊搜索分页查询
+func (a *apiScan) SearchWebInfo(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.SearchWebInfo(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}

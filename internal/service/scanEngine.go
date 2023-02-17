@@ -17,6 +17,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
+	"strings"
 )
 
 var ScanEngine = new(serviceScanEngine)
@@ -543,4 +544,47 @@ func (s *serviceScanEngine) SearchPortScan(ctx context.Context, page, limit int,
 		return &model.ResAPiScanPorts{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
 	}
 	return &model.ResAPiScanPorts{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}
+
+// SearchWebInfo Web信息模糊搜索分页查询
+func (s *serviceScanEngine) SearchWebInfo(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanWebInfos {
+	var (
+		result []*model.ScanWeb
+	)
+	SearchModel := dao.ScanWeb.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("CusName")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("cus_name like ?", "%"+gconv.String(j.Get("CusName"))+"%")
+		}
+		if gconv.String(j.Get("url")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("url like ?", "%"+gconv.String(j.Get("url"))+"%")
+		}
+		if gconv.String(j.Get("title")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("title like ?", "%"+gconv.String(j.Get("title"))+"%")
+		}
+	}
+	count, _ := SearchModel.Ctx(ctx).Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Ctx(ctx).Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "Web信息分页查询 数据库错误:%s", err.Error())
+			return &model.ResAPiScanWebInfos{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.ResAPiScanWebInfos{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	for i, _ := range result {
+		result[i].Js = ""
+		result[i].Urls = ""
+		result[i].Forms = ""
+		result[i].Secret = ""
+		result[i].Image = ""
+		tmp := strings.Split(result[i].Fingerprint, "-")
+		if len(tmp) > 1 {
+			result[i].Fingerprint = tmp[0]
+		}
+	}
+	return &model.ResAPiScanWebInfos{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
