@@ -203,3 +203,8 @@ func (a *apiScan) SearchDomain(r *ghttp.Request) {
 func (a *apiScan) GetApiCusName(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.GetApiCusName(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("cusname")))
 }
+
+// SearchSubDomain 子域名模糊搜索分页查询
+func (a *apiScan) SearchSubDomain(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.SearchSubDomain(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}

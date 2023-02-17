@@ -50,6 +50,7 @@ func init() {
 			group.POST("/domain", controller.Scan.AddDomain)
 			group.GET("/domain", controller.Scan.SearchDomain)
 			group.GET("/group/cusname", controller.Scan.GetApiCusName)
+			group.GET("/subdomain", controller.Scan.SearchSubDomain)
 		})
 	})
 }

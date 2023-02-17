@@ -474,3 +474,43 @@ func (s *serviceScanEngine) GetApiCusName(ctx context.Context, page, limit int, 
 	}
 	return &model.ResAPiScanCusNames{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
+
+// SearchSubDomain 子域名模糊搜索分页查询
+func (s *serviceScanEngine) SearchSubDomain(ctx context.Context, page, limit int, search interface{}) *model.ScanSubdomainRes {
+	var (
+		result []*model.ScanSubdomain
+	)
+	SearchModel := dao.ScanSubdomain.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("CusName")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("cus_name like ?", "%"+gconv.String(j.Get("CusName"))+"%")
+		}
+		if gconv.String(j.Get("IP")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("ip like ?", "%"+gconv.String(j.Get("IP"))+"%")
+		}
+		if gconv.String(j.Get("Location")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("location like ?", "%"+gconv.String(j.Get("Location"))+"%")
+		}
+		if gconv.String(j.Get("SubDomain")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("subdomain like ?", "%"+gconv.String(j.Get("SubDomain"))+"%")
+		}
+	}
+	count, _ := SearchModel.Ctx(ctx).Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Ctx(ctx).Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "子域名管理分页查询 数据库错误:%s", err.Error())
+			return &model.ScanSubdomainRes{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.ScanSubdomainRes{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	index := (page - 1) * limit
+	for i, _ := range result {
+		index++
+		result[i].Id = index
+	}
+	return &model.ScanSubdomainRes{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}
