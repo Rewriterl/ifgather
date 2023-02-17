@@ -507,10 +507,40 @@ func (s *serviceScanEngine) SearchSubDomain(ctx context.Context, page, limit int
 	} else {
 		return &model.ScanSubdomainRes{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
 	}
-	index := (page - 1) * limit
-	for i, _ := range result {
-		index++
-		result[i].Id = index
-	}
 	return &model.ScanSubdomainRes{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}
+
+// SearchPortScan 端口模糊搜索分页查询
+func (s *serviceScanEngine) SearchPortScan(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanPorts {
+	var (
+		result []*model.ScanPort
+	)
+	SearchModel := dao.ScanPort.Ctx(ctx).Clone()
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("CusName")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("cus_name like ?", "%"+gconv.String(j.Get("CusName"))+"%")
+		}
+		if gconv.String(j.Get("IP")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("host like ?", "%"+gconv.String(j.Get("IP"))+"%")
+		}
+		if gconv.String(j.Get("port")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("port = ?", gconv.String(j.Get("port")))
+		}
+		if gconv.String(j.Get("ServiceName")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("service_name like ?", "%"+gconv.String(j.Get("servicename"))+"%")
+		}
+	}
+	count, _ := SearchModel.Ctx(ctx).Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Ctx(ctx).Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "端口管理分页查询 数据库错误:%s", err.Error())
+			return &model.ResAPiScanPorts{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.ResAPiScanPorts{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	return &model.ResAPiScanPorts{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }

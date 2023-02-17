@@ -208,3 +208,8 @@ func (a *apiScan) GetApiCusName(r *ghttp.Request) {
 func (a *apiScan) SearchSubDomain(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchSubDomain(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
+
+// SearchPortScan 端口模糊搜索分页查询
+func (a *apiScan) SearchPortScan(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.SearchPortScan(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}
