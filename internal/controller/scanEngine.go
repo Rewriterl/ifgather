@@ -218,3 +218,12 @@ func (a *apiScan) SearchPortScan(r *ghttp.Request) {
 func (a *apiScan) SearchWebInfo(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchWebInfo(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
+
+// WebInfoTree 返回web爬虫结果
+func (a *apiScan) WebInfoTree(r *ghttp.Request) {
+	var data *model.ScanWebTreeReq
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	r.Response.WriteJson(service.ScanEngine.WebInfoTree(r.Context(), data))
+}

@@ -53,6 +53,7 @@ func init() {
 			group.GET("/subdomain", controller.Scan.SearchSubDomain)
 			group.GET("/port", controller.Scan.SearchPortScan)
 			group.GET("/webinfo", controller.Scan.SearchWebInfo)
+			group.POST("/webinfo/tree", controller.Scan.WebInfoTree)
 		})
 	})
 }

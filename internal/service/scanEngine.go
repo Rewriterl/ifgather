@@ -588,3 +588,48 @@ func (s *serviceScanEngine) SearchWebInfo(ctx context.Context, page, limit int, 
 	}
 	return &model.ResAPiScanWebInfos{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
+
+// WebInfoTree 返回web爬虫结果
+func (s *serviceScanEngine) WebInfoTree(ctx context.Context, r *model.ScanWebTreeReq) *model.ReScanWebTree {
+	result, err := dao.ScanWeb.Ctx(ctx).Where("url=?", r.Url).One()
+	if err != nil {
+		return &model.ReScanWebTree{Code: 201, Msg: "数据库查询错误", UrlData: nil}
+	}
+	if result == nil {
+		return &model.ReScanWebTree{Code: 201, Msg: "无结果", UrlData: nil}
+	}
+	var UrlData []model.ReScanWebTreeInfo
+	var scanWeb *model.ScanWeb
+	err = tools.TransToStruct(result, &scanWeb)
+	if len(scanWeb.Urls) != 0 {
+		tmpList := strings.Split(scanWeb.Urls, "\n")
+		for _, v := range tmpList {
+			UrlData = append(UrlData, model.ReScanWebTreeInfo{Title: v, Href: v})
+		}
+	}
+	if len(UrlData) == 0 {
+		UrlData = append(UrlData, model.ReScanWebTreeInfo{Title: "无数据", Href: ""})
+	}
+	var JsData []model.ReScanWebTreeInfo
+	if len(scanWeb.Js) != 0 {
+		tmpList := strings.Split(scanWeb.Js, "\n")
+		for _, v := range tmpList {
+			JsData = append(JsData, model.ReScanWebTreeInfo{Title: v, Href: v})
+		}
+	}
+	if len(JsData) == 0 {
+		JsData = append(JsData, model.ReScanWebTreeInfo{Title: "无数据", Href: ""})
+	}
+	var FormsData []model.ReScanWebTreeInfo
+	if len(scanWeb.Forms) != 0 {
+		tmpList := strings.Split(scanWeb.Forms, "\n")
+		for _, v := range tmpList {
+			FormsData = append(FormsData, model.ReScanWebTreeInfo{Title: v, Href: v})
+		}
+	}
+	if len(FormsData) == 0 {
+		FormsData = append(FormsData, model.ReScanWebTreeInfo{Title: "无数据", Href: ""})
+	}
+	imagePath := strings.Replace(scanWeb.Image, "public/", "", -1)
+	return &model.ReScanWebTree{Code: 200, Msg: "ok", UrlData: UrlData, JsData: JsData, FormsData: FormsData, Secret: scanWeb.Secret, Images: "/" + imagePath}
+}
