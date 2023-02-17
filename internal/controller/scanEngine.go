@@ -227,3 +227,17 @@ func (a *apiScan) WebInfoTree(r *ghttp.Request) {
 	}
 	r.Response.WriteJson(service.ScanEngine.WebInfoTree(r.Context(), data))
 }
+
+// DelWebInfo 删除指定url
+func (a *apiScan) DelWebInfo(r *ghttp.Request) {
+	var data *model.ScanWebTreeReq
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.ScanEngine.DelWebInfo(r.Context(), data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "删除web资产", fmt.Sprintf("Url[%s]", data.Url))
+		response.JsonExit(r, 200, "ok")
+	}
+}

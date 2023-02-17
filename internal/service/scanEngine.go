@@ -633,3 +633,13 @@ func (s *serviceScanEngine) WebInfoTree(ctx context.Context, r *model.ScanWebTre
 	imagePath := strings.Replace(scanWeb.Image, "public/", "", -1)
 	return &model.ReScanWebTree{Code: 200, Msg: "ok", UrlData: UrlData, JsData: JsData, FormsData: FormsData, Secret: scanWeb.Secret, Images: "/" + imagePath}
 }
+
+// WebInfoDel 删除指定url
+func (s *serviceScanEngine) DelWebInfo(ctx context.Context, r *model.ScanWebTreeReq) error {
+	_, err := dao.ScanWeb.Ctx(ctx).Where("url=?", r.Url).Delete()
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "删除URL数据库错误:%s", err.Error())
+		return errors.New("删除URL失败,数据库错误")
+	}
+	return nil
+}

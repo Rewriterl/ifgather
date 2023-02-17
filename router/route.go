@@ -54,6 +54,7 @@ func init() {
 			group.GET("/port", controller.Scan.SearchPortScan)
 			group.GET("/webinfo", controller.Scan.SearchWebInfo)
 			group.POST("/webinfo/tree", controller.Scan.WebInfoTree)
+			group.DELETE("/webinfo", controller.Scan.DelWebInfo)
 		})
 	})
 }
