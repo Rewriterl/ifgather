@@ -42,6 +42,7 @@ func init() {
 			group.POST("/engine/webinfo", controller.Scan.SetWebInfoEngine)
 			group.GET("/engine/nsq/portscan", controller.Scan.NsqPortScanStat)
 			group.GET("/engine/nsq/subdomain", controller.Scan.NsqSubDomainStat)
+			group.GET("/engine/nsq/webinfo", controller.Scan.NsqWebInfoStat)
 			group.GET("/client/info", controller.Scan.GetApiKeyEngine)
 			group.DELETE("/engine/emptydomain", controller.Scan.EmptyDomain)
 			group.DELETE("/engine/emptyport", controller.Scan.EmptyPort)

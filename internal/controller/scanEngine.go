@@ -251,3 +251,8 @@ func (a *apiScan) NsqPortScanStat(r *ghttp.Request) {
 func (a *apiScan) NsqSubDomainStat(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.NsqSubDomainStat(r.Context()))
 }
+
+// NsqWebInfoStat Web信息扫描管理 Nsqd详情
+func (a *apiScan) NsqWebInfoStat(r *ghttp.Request) {
+	r.Response.WriteJson(service.ScanEngine.NsqWebInfoStat(r.Context()))
+}
