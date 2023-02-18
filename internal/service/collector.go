@@ -3,15 +3,19 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
 	"github.com/Rewriterl/ifgather/utility/logger"
 	"github.com/Rewriterl/ifgather/utility/nsq/producer"
 	"github.com/Rewriterl/ifgather/utility/tools"
+	"github.com/gogf/gf/v2/container/gset"
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/gogf/gf/v2/util/gconv"
+	"github.com/projectdiscovery/ipranger"
+	"strings"
 )
 
 var Collector = new(collectorService)
@@ -143,4 +147,87 @@ func (s *collectorService) EmptySubDomainTask(ctx context.Context) error {
 		return errors.New("清空子域名数据失败,数据库错误")
 	}
 	return nil
+}
+
+// AddPortScanTask 添加端口扫描任务
+func (s *collectorService) AddPortScanTask(ctx context.Context, r *model.UtilPortScanApiAddReq) (string, error) {
+	// 检测待扫描端口 参数值是否正确
+	if r.Ports != "full" && r.Ports != "top100" && r.Ports != "top1000" && !strings.Contains(r.Ports, "-") &&
+		!strings.Contains(r.Ports, ",") && !gstr.IsNumeric(r.Ports) {
+		return "", errors.New("待扫描端口ports参数格式错误,请检查")
+	}
+
+	// 解析hosts参数值
+	hostlist := strings.Split(r.Hosts, "\n")
+	IpSet := gset.NewStrSet() // 保存解析的host并去重
+	// 提取解析host
+	if len(hostlist) == 1 { // 单条记录
+		if !ipranger.IsCidr(r.Hosts) && !ipranger.IsIP(r.Hosts) { // 判断提交的host格式是否正确
+			return "", errors.New("提交的主机地址格式有误,请检查")
+		} else if ipranger.IsIP(r.Hosts) {
+			IpSet.Add(gstr.Trim(r.Hosts))
+		} else {
+			iplist, err := ipranger.Ips(r.Hosts)
+			if err != nil {
+				return "", errors.New("提交的主机地址格式有误,请检查")
+			} else {
+				IpSet.Add(iplist...)
+			}
+		}
+	} else { // 多条记录
+		for _, tmphost := range hostlist {
+			if gstr.Trim(tmphost) == "" {
+				continue
+			}
+			if !ipranger.IsCidr(tmphost) && !ipranger.IsIP(tmphost) {
+				return "", errors.New("提交的主机地址格式有误,请检查")
+			} else if ipranger.IsIP(tmphost) {
+				IpSet.Add(gstr.Trim(tmphost))
+			} else {
+				iplist, err := ipranger.Ips(tmphost)
+				if err != nil {
+					return "", errors.New("提交的主机地址格式有误,请检查")
+				} else {
+					IpSet.Add(iplist...)
+				}
+			}
+		}
+	}
+
+	if IpSet.Size() == 0 {
+		return "", errors.New("解析后的host主机数为0个,请检查")
+	}
+
+	// 任务信息保存到数据库中
+	if result, err := dao.UtilPortscanTask.Ctx(ctx).Where("cus_name=?", r.CusName).One(); err != nil {
+		return "", errors.New("添加端口扫描任务失败,数据库错误")
+	} else if result == nil {
+		if result, err := dao.UtilPortscanTask.Ctx(ctx).Insert(g.Map{"cus_name": r.CusName, "host_num": IpSet.Size(), "scan_num": 0}); err != nil {
+			return "", errors.New("添加端口扫描任务失败,数据库错误")
+		} else if result == nil {
+			return "", errors.New("添加端口扫描任务失败,数据库插入数据失败")
+		}
+	} else {
+		var portScanTask *model.UtilPortscanTask
+		_ = tools.TransToStruct(result, &portScanTask)
+		if res, err := dao.UtilPortscanTask.Ctx(ctx).Update(g.Map{"host_num": portScanTask.HostNum + IpSet.Size()}, "cus_name", r.CusName); err != nil {
+			return "", errors.New("添加端口扫描任务失败,数据库错误")
+		} else if res == nil {
+			return "", errors.New("添加端口扫描任务失败,数据库更新数据失败")
+		}
+	}
+
+	logger.WebLog.Debugf(ctx, "util-添加端口扫描任务[%s]成功, 共计[%d]台主机", r.CusName, IpSet.Size())
+	// 批量发送到消息队列中
+	SendMsg := make([]model.UtilPortScanApiAddReq, 0)
+
+	r.CusName = "util-" + r.CusName
+	for _, addres := range IpSet.Slice() {
+		tmpmsg := *r
+		tmpmsg.Hosts = addres
+		SendMsg = append(SendMsg, tmpmsg)
+	}
+	// 异步投递消息
+	go producer.SendPortScanMessage(ctx, SendMsg)
+	return fmt.Sprintf("util-添加端口扫描任务成功,共计:%d台主机", IpSet.Size()), nil
 }

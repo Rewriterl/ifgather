@@ -18,6 +18,7 @@ require (
 	github.com/miekg/dns v1.1.50
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/parnurzeal/gorequest v0.2.16
+	github.com/projectdiscovery/ipranger v0.0.2
 	github.com/projectdiscovery/retryabledns v1.0.20
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/smartystreets/goconvey v1.7.2 // indirect

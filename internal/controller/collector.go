@@ -67,3 +67,19 @@ func (a *collectorApi) EmptySubDomainTask(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// AddPortScanTask 添加端口扫描任务
+func (a *collectorApi) AddPortScanTask(r *ghttp.Request) {
+	var (
+		data *model.UtilPortScanApiAddReq
+	)
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if result, err := service.Collector.AddPortScanTask(r.Context(), data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "信息搜集-添加端口扫描任务", result)
+		response.JsonExit(r, 200, result)
+	}
+}
