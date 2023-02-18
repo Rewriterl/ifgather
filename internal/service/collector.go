@@ -131,3 +131,16 @@ func (s *collectorService) DelSubDomainTask(ctx context.Context, r *model.UtilSu
 	_, err = dao.UtilSubdomainResult.Ctx(ctx).Delete("cus_name=?", r.CusName)
 	return nil
 }
+
+// EmptySubDomainTask 清空子域名扫描任务
+func (s *collectorService) EmptySubDomainTask(ctx context.Context) error {
+	if _, err := dao.UtilSubdomainTask.Ctx(ctx).Delete("1=1"); err != nil {
+		logger.WebLog.Warningf(ctx, "清空Util-子域名扫描数据 数据库错误:%s", err.Error())
+		return errors.New("清空子域名数据失败,数据库错误")
+	}
+	if _, err := dao.UtilSubdomainResult.Ctx(ctx).Delete("1=1"); err != nil {
+		logger.WebLog.Warningf(ctx, "清空util-子域名扫描数据 数据库错误:%s", err.Error())
+		return errors.New("清空子域名数据失败,数据库错误")
+	}
+	return nil
+}

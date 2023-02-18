@@ -61,10 +61,12 @@ func init() {
 		})
 		group.Group("/collector", func(group *ghttp.RouterGroup) {
 			group.Middleware(service.Middleware.Auth)
+			//TODO: 对数据库操作,命名暂时有些问题，不太好和scan区分开
 			group.POST("/subdomain", controller.Collector.AddSubDomainTask)
 			group.GET("/subdomain", controller.Collector.SearchSubDomainTask)
 			group.GET("/subdomain/details", controller.Collector.SearchSubDomainDetails)
 			group.DELETE("/subdomain", controller.Collector.DelSubDomainTask)
+			group.DELETE("/subdomain/all", controller.Collector.EmptySubDomainTask)
 		})
 	})
 }
