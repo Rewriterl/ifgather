@@ -119,3 +119,15 @@ func (s *collectorService) SearchSubDomainDetails(ctx context.Context, page, lim
 	}
 	return &model.ScanSubdomainRes{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
+
+// DelSubDomainTask 删除指定子域名扫描任务
+func (s *collectorService) DelSubDomainTask(ctx context.Context, r *model.UtilSubdomainTaskDelReq) error {
+	res, err := dao.UtilSubdomainTask.Ctx(ctx).Delete("cus_name=?", r.CusName)
+	if err != nil {
+		return errors.New("删除该任务失败,数据库错误")
+	} else if res == nil {
+		return errors.New("删除该任务失败,数据库中无此任务")
+	}
+	_, err = dao.UtilSubdomainResult.Ctx(ctx).Delete("cus_name=?", r.CusName)
+	return nil
+}

@@ -64,6 +64,7 @@ func init() {
 			group.POST("/subdomain", controller.Collector.AddSubDomainTask)
 			group.GET("/subdomain", controller.Collector.SearchSubDomainTask)
 			group.GET("/subdomain/details", controller.Collector.SearchSubDomainDetails)
+			group.DELETE("/subdomain", controller.Collector.DelSubDomainTask)
 		})
 	})
 }
