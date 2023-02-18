@@ -15,11 +15,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type serviceUser struct{}
+type userService struct{}
 
-var User = new(serviceUser)
+var User = new(userService)
 
-func (s *serviceUser) Login(ctx context.Context, r *model.UsersApiLoginReq, ip, userAgent string) error {
+func (s *userService) Login(ctx context.Context, r *model.UsersApiLoginReq, ip, userAgent string) error {
 	one, err := dao.Users.Ctx(ctx).One("username", r.Username)
 	returnErr := errors.New("用户登录失败")
 	if err != nil || one == nil {
@@ -46,23 +46,23 @@ func (s *serviceUser) Login(ctx context.Context, r *model.UsersApiLoginReq, ip, 
 	return nil
 }
 
-func (s *serviceUser) checkPassword(password, newPassword string) bool {
+func (s *userService) checkPassword(password, newPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(password), []byte(newPassword))
 	return err == nil
 }
 
-func (s *serviceUser) IsSignedIn(ctx context.Context) bool {
+func (s *userService) IsSignedIn(ctx context.Context) bool {
 	c := Context.Get(ctx)
 	return c != nil && c.User != nil
 }
 
-func (s *serviceUser) saveLoginLog(ctx context.Context, username, ip, userAgent string) {
+func (s *userService) saveLoginLog(ctx context.Context, username, ip, userAgent string) {
 	if _, err := dao.UserLog.Ctx(ctx).Insert(g.Map{"username": username, "ip": ip, "user_agent": userAgent}); err != nil {
 		logger.WebLog.Warningf(ctx, "保存登录日志出现错误:%s", err.Error())
 	}
 }
 
-func (s *serviceUser) UserInfo(ctx context.Context) *model.Users {
+func (s *userService) UserInfo(ctx context.Context) *model.Users {
 	user := Session.GetUser(ctx)
 	one, err := dao.Users.Ctx(ctx).One("username=?", user.Username)
 	if err != nil {
@@ -75,11 +75,11 @@ func (s *serviceUser) UserInfo(ctx context.Context) *model.Users {
 	return user1
 }
 
-func (s *serviceUser) Logout(ctx context.Context) error {
+func (s *userService) Logout(ctx context.Context) error {
 	return Session.RemoveUser(ctx)
 }
 
-func (s *serviceUser) AddUserOptLog(ctx context.Context, ip, Theme, Content string) {
+func (s *userService) AddUserOptLog(ctx context.Context, ip, Theme, Content string) {
 	_, err := dao.UserOperation.Ctx(ctx).Insert(g.Map{
 		"Username": Session.GetUser(ctx).Username,
 		"Ip":       ip,
@@ -93,7 +93,7 @@ func (s *serviceUser) AddUserOptLog(ctx context.Context, ip, Theme, Content stri
 	logger.WebLog.Infof(ctx, "用户操作 %s %s", Theme, Content)
 }
 
-func (s *serviceUser) SearchUser(ctx context.Context, page, limit int, search interface{}) *model.UserRspManager {
+func (s *userService) SearchUser(ctx context.Context, page, limit int, search interface{}) *model.UserRspManager {
 	var resultUser []*model.Users
 	UserSearch := dao.Users.Ctx(ctx).Clone()
 	searchStr := gconv.String(search)
@@ -129,7 +129,7 @@ func (s *serviceUser) SearchUser(ctx context.Context, page, limit int, search in
 	return &model.UserRspManager{Code: 0, Msg: "ok", Count: int64(count), Data: resultUser}
 }
 
-func (s *serviceUser) AddUser(ctx context.Context, r *model.UsersApiRegisterReq) error {
+func (s *userService) AddUser(ctx context.Context, r *model.UsersApiRegisterReq) error {
 	if i, err := dao.Users.Ctx(ctx).Count("username=?", r.Username); err != nil {
 		logger.WebLog.Warningf(ctx, "添加用户 数据库错误:%s", err.Error())
 		return errors.New("添加用户失败")
@@ -152,7 +152,7 @@ func (s *serviceUser) AddUser(ctx context.Context, r *model.UsersApiRegisterReq)
 	return nil
 }
 
-func (s *serviceUser) setPassword(password string) (string, error) {
+func (s *userService) setPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -160,7 +160,7 @@ func (s *serviceUser) setPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
-func (s *serviceUser) ChangePassword(ctx context.Context, r *model.UserApiChangePasswordReq) error {
+func (s *userService) ChangePassword(ctx context.Context, r *model.UserApiChangePasswordReq) error {
 	userinfo := Session.GetUser(ctx)
 	one, err := dao.Users.Ctx(ctx).One("username=?", userinfo.Username)
 	returnErr := errors.New("修改密码失败")
@@ -188,7 +188,7 @@ func (s *serviceUser) ChangePassword(ctx context.Context, r *model.UserApiChange
 	}
 }
 
-func (s *serviceUser) UserDel(ctx context.Context, r *model.UserApiDelReq) error {
+func (s *userService) UserDel(ctx context.Context, r *model.UserApiDelReq) error {
 	one, err2 := dao.Users.Ctx(ctx).One("id=?", r.Id)
 	returnErr := errors.New("删除用户失败")
 	if err2 != nil {
@@ -212,12 +212,12 @@ func (s *serviceUser) UserDel(ctx context.Context, r *model.UserApiDelReq) error
 	}
 }
 
-func (s *serviceUser) IsAdmin(ctx context.Context) bool {
+func (s *userService) IsAdmin(ctx context.Context) bool {
 	userinfo := Session.GetUser(ctx)
 	return userinfo.Username == "admin"
 }
 
-func (s *serviceUser) SetUserInfo(ctx context.Context, r *model.UserApiSetInfoReq) error {
+func (s *userService) SetUserInfo(ctx context.Context, r *model.UserApiSetInfoReq) error {
 	r.Remark = ghtml.SpecialChars(r.Remark)
 	r.NickName = ghtml.SpecialChars(r.NickName)
 	result, err := dao.Users.Ctx(ctx).Update(r, "username", Session.GetUser(ctx).Username)
@@ -232,7 +232,7 @@ func (s *serviceUser) SetUserInfo(ctx context.Context, r *model.UserApiSetInfoRe
 	}
 }
 
-func (s *serviceUser) SearchUserLoginLogs(ctx context.Context, page, limit int, search interface{}) *model.UserOperationRespLogins {
+func (s *userService) SearchUserLoginLogs(ctx context.Context, page, limit int, search interface{}) *model.UserOperationRespLogins {
 	var result []*model.UserLog
 	SearchModel := dao.UserLog.Ctx(ctx).Clone()
 	searchStr := gconv.String(search)
@@ -265,7 +265,7 @@ func (s *serviceUser) SearchUserLoginLogs(ctx context.Context, page, limit int, 
 	return &model.UserOperationRespLogins{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
 
-func (s *serviceUser) SearchUserOperation(ctx context.Context, page, limit int, search interface{}) *model.UserOperationRespLogs {
+func (s *userService) SearchUserOperation(ctx context.Context, page, limit int, search interface{}) *model.UserOperationRespLogs {
 	var result []*model.UserOperation
 	SearchModel := dao.UserOperation.Ctx(ctx).Clone()
 	searchStr := gconv.String(search)

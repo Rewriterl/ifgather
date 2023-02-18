@@ -10,12 +10,12 @@ import (
 	"github.com/gogf/gf/v2/util/gconv"
 )
 
-var Scan = new(apiScan)
+var Scan = new(scanApi)
 
-type apiScan struct{}
+type scanApi struct{}
 
 // SetNsqEngine 扫描引擎 添加消息队列配置
-func (a *apiScan) SetNsqEngine(r *ghttp.Request) {
+func (a *scanApi) SetNsqEngine(r *ghttp.Request) {
 	var (
 		data *model.APIKeyEngineNsqReq
 	)
@@ -31,7 +31,7 @@ func (a *apiScan) SetNsqEngine(r *ghttp.Request) {
 }
 
 // SetPortScanEngine 扫描引擎 添加端口扫描配置
-func (a *apiScan) SetPortScanEngine(r *ghttp.Request) {
+func (a *scanApi) SetPortScanEngine(r *ghttp.Request) {
 	var (
 		data *model.ApiKeyEnginePortScanReq
 	)
@@ -47,7 +47,7 @@ func (a *apiScan) SetPortScanEngine(r *ghttp.Request) {
 }
 
 // SetDomainEngine 扫描引擎 添加子域名
-func (a *apiScan) SetDomainEngine(r *ghttp.Request) {
+func (a *scanApi) SetDomainEngine(r *ghttp.Request) {
 	var (
 		data *model.ApiKeyEngineDomainReq
 	)
@@ -63,7 +63,7 @@ func (a *apiScan) SetDomainEngine(r *ghttp.Request) {
 }
 
 // SetApiKeyEngine 扫描引擎 添加API秘钥
-func (a *apiScan) SetApiKeyEngine(r *ghttp.Request) {
+func (a *scanApi) SetApiKeyEngine(r *ghttp.Request) {
 	var (
 		data *model.ApiKeyEngineKeyReq
 	)
@@ -79,7 +79,7 @@ func (a *apiScan) SetApiKeyEngine(r *ghttp.Request) {
 }
 
 // SetWebInfoEngine 扫描引擎 添加Web探测
-func (a *apiScan) SetWebInfoEngine(r *ghttp.Request) {
+func (a *scanApi) SetWebInfoEngine(r *ghttp.Request) {
 	var (
 		data *model.ApiKeyEngineWebInfoReq
 	)
@@ -94,7 +94,7 @@ func (a *apiScan) SetWebInfoEngine(r *ghttp.Request) {
 	}
 }
 
-func (a *apiScan) GetApiKeyEngine(r *ghttp.Request) {
+func (a *scanApi) GetApiKeyEngine(r *ghttp.Request) {
 	pwd := gconv.String(r.Get("pwd"))
 	if pwd == "" {
 		response.JsonExit(r, 201, "请输入密码")
@@ -112,7 +112,7 @@ func (a *apiScan) GetApiKeyEngine(r *ghttp.Request) {
 }
 
 // EmptyPort 端口扫描清空消息队列
-func (a *apiScan) EmptyPort(r *ghttp.Request) {
+func (a *scanApi) EmptyPort(r *ghttp.Request) {
 	if err := service.ScanEngine.EmptyPort(r.Context()); err != nil {
 		response.JsonExit(r, 201, "清空端口扫描任务队列失败")
 	} else {
@@ -122,7 +122,7 @@ func (a *apiScan) EmptyPort(r *ghttp.Request) {
 }
 
 // EmptyDomain 子域名清空消息队列
-func (a *apiScan) EmptyDomain(r *ghttp.Request) {
+func (a *scanApi) EmptyDomain(r *ghttp.Request) {
 	if err := service.ScanEngine.EmptyDomain(r.Context()); err != nil {
 		response.JsonExit(r, 201, "清空子域名扫描任务队列失败")
 	} else {
@@ -132,7 +132,7 @@ func (a *apiScan) EmptyDomain(r *ghttp.Request) {
 }
 
 // EmptyWebInfo Web探测清空消息队列
-func (a *apiScan) EmptyWebInfo(r *ghttp.Request) {
+func (a *scanApi) EmptyWebInfo(r *ghttp.Request) {
 	if err := service.ScanEngine.EmptyWebInfo(r.Context()); err != nil {
 		response.JsonExit(r, 201, "清空Web探测任务队列失败")
 	} else {
@@ -142,7 +142,7 @@ func (a *apiScan) EmptyWebInfo(r *ghttp.Request) {
 }
 
 // ManagerAdd 添加厂商
-func (a *apiScan) ManagerAdd(r *ghttp.Request) {
+func (a *scanApi) ManagerAdd(r *ghttp.Request) {
 	var (
 		data *model.ApiScanManagerAddReq
 	)
@@ -158,7 +158,7 @@ func (a *apiScan) ManagerAdd(r *ghttp.Request) {
 }
 
 // ManagerDelete 删除厂商
-func (a *apiScan) ManagerDelete(r *ghttp.Request) {
+func (a *scanApi) ManagerDelete(r *ghttp.Request) {
 	var (
 		data *model.ApiScanManagerDeleteReq
 	)
@@ -174,12 +174,12 @@ func (a *apiScan) ManagerDelete(r *ghttp.Request) {
 }
 
 // SearchManager 厂商模糊搜索分页查询
-func (a *apiScan) SearchManager(r *ghttp.Request) {
+func (a *scanApi) SearchManager(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchManager(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
 
 // AddDomain 添加主域名
-func (a *apiScan) AddDomain(r *ghttp.Request) {
+func (a *scanApi) AddDomain(r *ghttp.Request) {
 	var (
 		data *model.ScanDomainApiAddReq
 	)
@@ -195,32 +195,32 @@ func (a *apiScan) AddDomain(r *ghttp.Request) {
 }
 
 // SearchDomain 主域名模糊搜索分页查询
-func (a *apiScan) SearchDomain(r *ghttp.Request) {
+func (a *scanApi) SearchDomain(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchDomain(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
 
 // GetApiCusName 返回厂商数据
-func (a *apiScan) GetApiCusName(r *ghttp.Request) {
+func (a *scanApi) GetApiCusName(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.GetApiCusName(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("cusname")))
 }
 
 // SearchSubDomain 子域名模糊搜索分页查询
-func (a *apiScan) SearchSubDomain(r *ghttp.Request) {
+func (a *scanApi) SearchSubDomain(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchSubDomain(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
 
 // SearchPortScan 端口模糊搜索分页查询
-func (a *apiScan) SearchPortScan(r *ghttp.Request) {
+func (a *scanApi) SearchPortScan(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchPortScan(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
 
 // SearchWebInfo Web信息模糊搜索分页查询
-func (a *apiScan) SearchWebInfo(r *ghttp.Request) {
+func (a *scanApi) SearchWebInfo(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.SearchWebInfo(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
 
 // WebInfoTree 返回web爬虫结果
-func (a *apiScan) WebInfoTree(r *ghttp.Request) {
+func (a *scanApi) WebInfoTree(r *ghttp.Request) {
 	var data *model.ScanWebTreeReq
 	if err := r.Parse(&data); err != nil {
 		response.JsonExit(r, 201, err.Error())
@@ -229,7 +229,7 @@ func (a *apiScan) WebInfoTree(r *ghttp.Request) {
 }
 
 // DelWebInfo 删除指定url
-func (a *apiScan) DelWebInfo(r *ghttp.Request) {
+func (a *scanApi) DelWebInfo(r *ghttp.Request) {
 	var data *model.ScanWebTreeReq
 	if err := r.Parse(&data); err != nil {
 		response.JsonExit(r, 201, err.Error())
@@ -243,16 +243,16 @@ func (a *apiScan) DelWebInfo(r *ghttp.Request) {
 }
 
 // NsqPortScanStat 端口扫描管理 Nsqd详情
-func (a *apiScan) NsqPortScanStat(r *ghttp.Request) {
+func (a *scanApi) NsqPortScanStat(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.NsqPortScanStat(r.Context()))
 }
 
 // NsqSubDomainStat 子域名扫描管理 Nsqd详情
-func (a *apiScan) NsqSubDomainStat(r *ghttp.Request) {
+func (a *scanApi) NsqSubDomainStat(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.NsqSubDomainStat(r.Context()))
 }
 
 // NsqWebInfoStat Web信息扫描管理 Nsqd详情
-func (a *apiScan) NsqWebInfoStat(r *ghttp.Request) {
+func (a *scanApi) NsqWebInfoStat(r *ghttp.Request) {
 	r.Response.WriteJson(service.ScanEngine.NsqWebInfoStat(r.Context()))
 }

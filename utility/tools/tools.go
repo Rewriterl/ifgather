@@ -5,6 +5,10 @@ import (
 	"github.com/gogf/gf/v2/database/gdb"
 )
 
+type ScanDomain struct {
+	Domain string `v:"domain#主域名不正确"`
+}
+
 func TransToStruct(one gdb.Record, out interface{}) error {
 	if err := one.Struct(out); err != nil && err != sql.ErrNoRows {
 		return err

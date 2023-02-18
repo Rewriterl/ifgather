@@ -22,12 +22,12 @@ import (
 	"time"
 )
 
-var ScanEngine = new(serviceScanEngine)
+var ScanEngine = new(scanEngineService)
 
-type serviceScanEngine struct{}
+type scanEngineService struct{}
 
 // SetNsqEngine 扫描引擎 添加nsq地址
-func (s *serviceScanEngine) SetNsqEngine(ctx context.Context, r *model.APIKeyEngineNsqReq) error {
+func (s *scanEngineService) SetNsqEngine(ctx context.Context, r *model.APIKeyEngineNsqReq) error {
 	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_nsq").Count()
 	returnErr := errors.New("保存失败")
 	if err != nil {
@@ -54,7 +54,7 @@ func (s *serviceScanEngine) SetNsqEngine(ctx context.Context, r *model.APIKeyEng
 }
 
 // SetPortScanEngine 扫描引擎 添加端口扫描
-func (s *serviceScanEngine) SetPortScanEngine(ctx context.Context, r *model.ApiKeyEnginePortScanReq) error {
+func (s *scanEngineService) SetPortScanEngine(ctx context.Context, r *model.ApiKeyEnginePortScanReq) error {
 	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_portscan").Count()
 	returnErr := errors.New("保存失败")
 	if err != nil {
@@ -81,7 +81,7 @@ func (s *serviceScanEngine) SetPortScanEngine(ctx context.Context, r *model.ApiK
 }
 
 // SetDomainEngine 扫描引擎 添加子域名
-func (s *serviceScanEngine) SetDomainEngine(ctx context.Context, r *model.ApiKeyEngineDomainReq) error {
+func (s *scanEngineService) SetDomainEngine(ctx context.Context, r *model.ApiKeyEngineDomainReq) error {
 	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_domain").Count()
 	reurnErr := errors.New("保存失败")
 	if err != nil {
@@ -108,7 +108,7 @@ func (s *serviceScanEngine) SetDomainEngine(ctx context.Context, r *model.ApiKey
 }
 
 // SetApiKeyEngine 扫描引擎 添加API秘钥
-func (s *serviceScanEngine) SetApiKeyEngine(ctx context.Context, r *model.ApiKeyEngineKeyReq) error {
+func (s *scanEngineService) SetApiKeyEngine(ctx context.Context, r *model.ApiKeyEngineKeyReq) error {
 	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_apikey").Count()
 	returnErr := errors.New("保存失败,数据库错误")
 	if err != nil {
@@ -135,7 +135,7 @@ func (s *serviceScanEngine) SetApiKeyEngine(ctx context.Context, r *model.ApiKey
 }
 
 // SetWebInfoEngine 扫描引擎 添加Web探测
-func (s *serviceScanEngine) SetWebInfoEngine(ctx context.Context, r *model.ApiKeyEngineWebInfoReq) error {
+func (s *scanEngineService) SetWebInfoEngine(ctx context.Context, r *model.ApiKeyEngineWebInfoReq) error {
 	count, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_webinfo").Count()
 	returnErr := errors.New("保存失败,数据库错误")
 	if err != nil {
@@ -162,7 +162,7 @@ func (s *serviceScanEngine) SetWebInfoEngine(ctx context.Context, r *model.ApiKe
 }
 
 // GetApiKeyEngine 扫描引擎 输出配置
-func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKeyEngine {
+func (s *scanEngineService) GetApiKeyEngine(ctx context.Context) *model.ResApiKeyEngine {
 	result := model.ResApiKeyEngine{}
 
 	one, err := dao.ApiKey.Ctx(ctx).Where("key=?", "engine_nsq").One()
@@ -261,21 +261,21 @@ func (s *serviceScanEngine) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 }
 
 // EmptyPort 端口扫描清空消息队列
-func (s *serviceScanEngine) EmptyPort(ctx context.Context) error {
+func (s *scanEngineService) EmptyPort(ctx context.Context) error {
 	return producer.EmptyNsqTopic(ctx, Gnsq.PortScanTopic, Gnsq.PortScanTopicChanl)
 }
 
 // EmptyDomain 子域名清空消息队列
-func (s *serviceScanEngine) EmptyDomain(ctx context.Context) error {
+func (s *scanEngineService) EmptyDomain(ctx context.Context) error {
 	return producer.EmptyNsqTopic(ctx, Gnsq.SubDomainTopic, Gnsq.SubDomainChanl)
 }
 
 // EmptyWebInfo Web探测清空消息队列
-func (s *serviceScanEngine) EmptyWebInfo(ctx context.Context) error {
+func (s *scanEngineService) EmptyWebInfo(ctx context.Context) error {
 	return producer.EmptyNsqTopic(ctx, Gnsq.WebInfoTopic, Gnsq.RWebInfoChanl)
 }
 
-func (s *serviceScanEngine) getNsqResInfo(ctx context.Context, topic string, channel string) *model.NsqResInfo {
+func (s *scanEngineService) getNsqResInfo(ctx context.Context, topic string, channel string) *model.NsqResInfo {
 	jsondata, err := producer.NsqStatsInfo(ctx, Gnsq.SubDomainTopic)
 	if err != nil {
 		return &model.NsqResInfo{Code: 0, Msg: "获取消息队列信息失败", Count: 0, Data: nil}
@@ -314,22 +314,22 @@ func (s *serviceScanEngine) getNsqResInfo(ctx context.Context, topic string, cha
 }
 
 // NsqPortScanStat 端口扫描管理 Nsqd详情
-func (s *serviceScanEngine) NsqPortScanStat(ctx context.Context) *model.NsqResInfo {
+func (s *scanEngineService) NsqPortScanStat(ctx context.Context) *model.NsqResInfo {
 	return s.getNsqResInfo(ctx, Gnsq.PortScanTopic, Gnsq.PortScanTopicChanl)
 }
 
 // NsqSubDomainStat 子域名管理 Nsqd详情
-func (s *serviceScanEngine) NsqSubDomainStat(ctx context.Context) *model.NsqResInfo {
+func (s *scanEngineService) NsqSubDomainStat(ctx context.Context) *model.NsqResInfo {
 	return s.getNsqResInfo(ctx, Gnsq.SubDomainTopic, Gnsq.SubDomainChanl)
 }
 
 // NsqWebInfoStat Web探测管理 Nsqd详情
-func (s *serviceScanEngine) NsqWebInfoStat(ctx context.Context) *model.NsqResInfo {
+func (s *scanEngineService) NsqWebInfoStat(ctx context.Context) *model.NsqResInfo {
 	return s.getNsqResInfo(ctx, Gnsq.WebInfoTopic, Gnsq.WebInfoChanl)
 }
 
 // ManagerAdd 添加厂商
-func (s *serviceScanEngine) ManagerAdd(ctx context.Context, r *model.ApiScanManagerAddReq) error {
+func (s *scanEngineService) ManagerAdd(ctx context.Context, r *model.ApiScanManagerAddReq) error {
 	count, err := dao.ScanHome.Ctx(ctx).Where("cus_name=?", r.CusName).Count()
 	if err != nil {
 		logger.WebLog.Warningf(ctx, "综合扫描-添加厂商失败:%s", err.Error())
@@ -347,7 +347,7 @@ func (s *serviceScanEngine) ManagerAdd(ctx context.Context, r *model.ApiScanMana
 }
 
 // ManagerDelete 删除厂商
-func (s *serviceScanEngine) ManagerDelete(ctx context.Context, r *model.ApiScanManagerDeleteReq) error {
+func (s *scanEngineService) ManagerDelete(ctx context.Context, r *model.ApiScanManagerDeleteReq) error {
 	count, err := dao.ScanHome.Ctx(ctx).Where("cus_name=?", r.CusName).Count()
 	if err != nil {
 		logger.WebLog.Warningf(ctx, "综合扫描-删除厂商失败:%s", err.Error())
@@ -375,7 +375,7 @@ func (s *serviceScanEngine) ManagerDelete(ctx context.Context, r *model.ApiScanM
 }
 
 // SearchManager 厂商模糊搜索分页查询
-func (s *serviceScanEngine) SearchManager(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanManager {
+func (s *scanEngineService) SearchManager(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanManager {
 	var (
 		result []*model.ScanHome
 	)
@@ -415,10 +415,7 @@ func (s *serviceScanEngine) SearchManager(ctx context.Context, page, limit int, 
 }
 
 // AddDomain 添加主域名
-func (s *serviceScanEngine) AddDomain(ctx context.Context, r *model.ScanDomainApiAddReq) error {
-	type ScanDomain struct {
-		Domain string `v:"domain#主域名不正确"`
-	}
+func (s *scanEngineService) AddDomain(ctx context.Context, r *model.ScanDomainApiAddReq) error {
 	count, err := dao.ScanHome.Ctx(ctx).Where("cus_name=?", r.CusName).Count()
 	if err != nil {
 		logger.WebLog.Warningf(ctx, "综合扫描-添加主域名失败:%s", err.Error())
@@ -438,7 +435,7 @@ func (s *serviceScanEngine) AddDomain(ctx context.Context, r *model.ScanDomainAp
 		if domain == "" {
 			continue
 		}
-		if e := g.Validator().Data(ScanDomain{Domain: domain}).Run(ctx); e != nil { // 校检domain
+		if e := g.Validator().Data(tools.ScanDomain{Domain: domain}).Run(ctx); e != nil { // 校检domain
 			return errors.New(e.Error())
 		}
 		domainList.Add(domain)
@@ -481,7 +478,7 @@ func (s *serviceScanEngine) AddDomain(ctx context.Context, r *model.ScanDomainAp
 }
 
 // SearchDomain 主域名模糊搜索分页查询
-func (s *serviceScanEngine) SearchDomain(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanDomain {
+func (s *scanEngineService) SearchDomain(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanDomain {
 	var (
 		result []*model.ScanDomain
 	)
@@ -510,7 +507,7 @@ func (s *serviceScanEngine) SearchDomain(ctx context.Context, page, limit int, s
 }
 
 // GetApiCusName 返回Group厂商数据
-func (s *serviceScanEngine) GetApiCusName(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanCusNames {
+func (s *scanEngineService) GetApiCusName(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanCusNames {
 	var (
 		result []model.ScanHome
 	)
@@ -532,7 +529,7 @@ func (s *serviceScanEngine) GetApiCusName(ctx context.Context, page, limit int, 
 }
 
 // SearchSubDomain 子域名模糊搜索分页查询
-func (s *serviceScanEngine) SearchSubDomain(ctx context.Context, page, limit int, search interface{}) *model.ScanSubdomainRes {
+func (s *scanEngineService) SearchSubDomain(ctx context.Context, page, limit int, search interface{}) *model.ScanSubdomainRes {
 	var (
 		result []*model.ScanSubdomain
 	)
@@ -567,7 +564,7 @@ func (s *serviceScanEngine) SearchSubDomain(ctx context.Context, page, limit int
 }
 
 // SearchPortScan 端口模糊搜索分页查询
-func (s *serviceScanEngine) SearchPortScan(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanPorts {
+func (s *scanEngineService) SearchPortScan(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanPorts {
 	var (
 		result []*model.ScanPort
 	)
@@ -602,7 +599,7 @@ func (s *serviceScanEngine) SearchPortScan(ctx context.Context, page, limit int,
 }
 
 // SearchWebInfo Web信息模糊搜索分页查询
-func (s *serviceScanEngine) SearchWebInfo(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanWebInfos {
+func (s *scanEngineService) SearchWebInfo(ctx context.Context, page, limit int, search interface{}) *model.ResAPiScanWebInfos {
 	var (
 		result []*model.ScanWeb
 	)
@@ -645,7 +642,7 @@ func (s *serviceScanEngine) SearchWebInfo(ctx context.Context, page, limit int, 
 }
 
 // WebInfoTree 返回web爬虫结果
-func (s *serviceScanEngine) WebInfoTree(ctx context.Context, r *model.ScanWebTreeReq) *model.ReScanWebTree {
+func (s *scanEngineService) WebInfoTree(ctx context.Context, r *model.ScanWebTreeReq) *model.ReScanWebTree {
 	result, err := dao.ScanWeb.Ctx(ctx).Where("url=?", r.Url).One()
 	if err != nil {
 		return &model.ReScanWebTree{Code: 201, Msg: "数据库查询错误", UrlData: nil}
@@ -690,7 +687,7 @@ func (s *serviceScanEngine) WebInfoTree(ctx context.Context, r *model.ScanWebTre
 }
 
 // WebInfoDel 删除指定url
-func (s *serviceScanEngine) DelWebInfo(ctx context.Context, r *model.ScanWebTreeReq) error {
+func (s *scanEngineService) DelWebInfo(ctx context.Context, r *model.ScanWebTreeReq) error {
 	_, err := dao.ScanWeb.Ctx(ctx).Where("url=?", r.Url).Delete()
 	if err != nil {
 		logger.WebLog.Warningf(ctx, "删除URL数据库错误:%s", err.Error())

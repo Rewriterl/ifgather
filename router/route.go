@@ -59,5 +59,10 @@ func init() {
 			group.POST("/webinfo/tree", controller.Scan.WebInfoTree)
 			group.DELETE("/webinfo", controller.Scan.DelWebInfo)
 		})
+		group.Group("/collector", func(group *ghttp.RouterGroup) {
+			group.Middleware(service.Middleware.Auth)
+			group.POST("/subdomain", controller.Collector.AddSubDomain)
+			group.GET("/subdomain", controller.Collector.SearchSubDomainManager)
+		})
 	})
 }
