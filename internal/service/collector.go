@@ -18,8 +18,8 @@ var Collector = new(collectorService)
 
 type collectorService struct{}
 
-// AddSubDomain 添加子域名扫描任务
-func (s *collectorService) AddSubDomain(ctx context.Context, r *model.ScanDomainApiAddReq) error {
+// AddSubDomainTask 添加子域名扫描任务
+func (s *collectorService) AddSubDomainTask(ctx context.Context, r *model.ScanDomainApiAddReq) error {
 	strList := gstr.Split(r.Domain, "\n")
 	domainList := make([]string, 0)
 	if len(strList) == 0 {
@@ -61,8 +61,8 @@ func (s *collectorService) AddSubDomain(ctx context.Context, r *model.ScanDomain
 	return nil
 }
 
-// SearchSubDomainManager 子域名扫描任务模糊分页查询
-func (s *collectorService) SearchSubDomainManager(ctx context.Context, page, limit int, search interface{}) *model.UtilSubDomainTaskApiManager {
+// SearchSubDomainTask 模糊分页查询子域名扫描任务
+func (s *collectorService) SearchSubDomainTask(ctx context.Context, page, limit int, search interface{}) *model.UtilSubDomainTaskApiManager {
 	var (
 		result []*model.UtilSubdomainTask
 	)
@@ -85,4 +85,37 @@ func (s *collectorService) SearchSubDomainManager(ctx context.Context, page, lim
 		return &model.UtilSubDomainTaskApiManager{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
 	}
 	return &model.UtilSubDomainTaskApiManager{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}
+
+// SearchSubDomainDetails 模糊分页查询子域名扫描详情
+func (s *collectorService) SearchSubDomainDetails(ctx context.Context, page, limit int, cus_name string, search interface{}) *model.ScanSubdomainRes {
+	var (
+		result []*model.ScanSubdomain
+	)
+	SearchModel := dao.UtilSubdomainResult.Ctx(ctx).Clone()
+	SearchModel = SearchModel.Ctx(ctx).Where("cus_name=?", cus_name)
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("IP")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("ip like ?", "%"+gconv.String(j.Get("IP"))+"%")
+		}
+		if gconv.String(j.Get("Location")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("location like ?", "%"+gconv.String(j.Get("Location"))+"%")
+		}
+		if gconv.String(j.Get("SubDomain")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("subdomain like ?", "%"+gconv.String(j.Get("SubDomain"))+"%")
+		}
+	}
+	count, _ := SearchModel.Ctx(ctx).Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Ctx(ctx).Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "Util-子域名分页查询 数据库错误:%s", err.Error())
+			return &model.ScanSubdomainRes{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.ScanSubdomainRes{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	return &model.ScanSubdomainRes{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
