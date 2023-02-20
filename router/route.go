@@ -70,6 +70,7 @@ func init() {
 			group.POST("/portscan", controller.Collector.AddPortScanTask)
 			group.GET("/portscan", controller.Collector.SearchPortScanTask)
 			group.DELETE("/portscan", controller.Collector.DelPortScanTask)
+			group.DELETE("/portscan/all", controller.Collector.EmptyPortScanTask)
 		})
 	})
 }

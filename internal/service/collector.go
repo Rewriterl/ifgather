@@ -269,3 +269,16 @@ func (s *collectorService) DelPortScanTask(ctx context.Context, r *model.UtilSub
 	_, _ = dao.UtilPortscanResult.Ctx(ctx).Delete("cus_name=?", r.CusName)
 	return nil
 }
+
+// EmptyPortScanTask 清空全部端口扫描任务
+func (s *collectorService) EmptyPortScanTask(ctx context.Context) error {
+	if _, err := dao.UtilPortscanTask.Ctx(ctx).Delete("1=1"); err != nil {
+		logger.WebLog.Warningf(ctx, "清空util-端口扫描数据 数据库错误:%s", err.Error())
+		return err
+	}
+	if _, err := dao.UtilPortscanResult.Ctx(ctx).Delete("1=1"); err != nil {
+		logger.WebLog.Warningf(ctx, "清空util-端口扫描数据 数据库错误:%s", err.Error())
+		return err
+	}
+	return nil
+}

@@ -104,3 +104,13 @@ func (a *collectorApi) DelPortScanTask(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// EmptyPortScanTask 清空所有端口扫描数据
+func (a *collectorApi) EmptyPortScanTask(r *ghttp.Request) {
+	if err := service.Collector.EmptyPortScanTask(r.Context()); err != nil {
+		response.JsonExit(r, 201, "清空端口扫描数据失败,数据库错误")
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "端口扫描清空数据", "清空数据成功")
+		response.JsonExit(r, 200, "ok")
+	}
+}
