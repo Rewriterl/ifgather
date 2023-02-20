@@ -68,6 +68,7 @@ func init() {
 			group.DELETE("/subdomain", controller.Collector.DelSubDomainTask)
 			group.DELETE("/subdomain/all", controller.Collector.EmptySubDomainTask)
 			group.POST("/portscan", controller.Collector.AddPortScanTask)
+			group.GET("/portscan", controller.Collector.SearchPortScanTask)
 		})
 	})
 }

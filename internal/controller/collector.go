@@ -83,3 +83,8 @@ func (a *collectorApi) AddPortScanTask(r *ghttp.Request) {
 		response.JsonExit(r, 200, result)
 	}
 }
+
+// SearchPortScanTask 模糊分页查询端口扫描任务
+func (a *collectorApi) SearchPortScanTask(r *ghttp.Request) {
+	r.Response.WriteJson(service.Collector.SearchPortScanTask(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
+}

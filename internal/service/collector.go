@@ -231,3 +231,29 @@ func (s *collectorService) AddPortScanTask(ctx context.Context, r *model.UtilPor
 	go producer.SendPortScanMessage(ctx, SendMsg)
 	return fmt.Sprintf("util-添加端口扫描任务成功,共计:%d台主机", IpSet.Size()), nil
 }
+
+// SearchPortScanTask 端口扫描管理模糊分页查询
+func (s *collectorService) SearchPortScanTask(ctx context.Context, page, limit int, search interface{}) *model.UtilPortScanResManager {
+	var (
+		result []*model.UtilPortscanTask
+	)
+	SearchModel := dao.UtilPortscanTask.Ctx(ctx).Clone() // 链式操作
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("cusname")) != "" {
+			SearchModel = SearchModel.Where("cus_name like ?", "%"+gconv.String(j.Get("cusname"))+"%")
+		}
+	}
+	count, _ := SearchModel.Ctx(ctx).Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Ctx(ctx).Order("id desc").Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "端口扫描管理分页查询 数据库错误:%s", err.Error())
+			return &model.UtilPortScanResManager{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.UtilPortScanResManager{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	return &model.UtilPortScanResManager{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}
