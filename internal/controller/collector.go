@@ -88,3 +88,19 @@ func (a *collectorApi) AddPortScanTask(r *ghttp.Request) {
 func (a *collectorApi) SearchPortScanTask(r *ghttp.Request) {
 	r.Response.WriteJson(service.Collector.SearchPortScanTask(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
+
+// DelPortScanTask 删除指定任务端口扫描数据
+func (a *collectorApi) DelPortScanTask(r *ghttp.Request) {
+	var (
+		data *model.UtilSubdomainTaskDelReq
+	)
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.Collector.DelPortScanTask(r.Context(), data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "端口扫描删除任务", fmt.Sprintf("任务名[%s]", data.CusName))
+		response.JsonExit(r, 200, "ok")
+	}
+}

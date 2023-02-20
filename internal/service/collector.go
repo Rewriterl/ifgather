@@ -257,3 +257,15 @@ func (s *collectorService) SearchPortScanTask(ctx context.Context, page, limit i
 	}
 	return &model.UtilPortScanResManager{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
+
+// DelPortScanTask 端口扫描删除指定任务(数据库)
+func (s *collectorService) DelPortScanTask(ctx context.Context, r *model.UtilSubdomainTaskDelReq) error {
+	res, err := dao.UtilPortscanTask.Ctx(ctx).Delete("cus_name=?", r.CusName)
+	if err != nil {
+		return errors.New("删除该任务失败,数据库错误")
+	} else if res == nil {
+		return errors.New("删除该任务失败,数据库中无此任务")
+	}
+	_, _ = dao.UtilPortscanResult.Ctx(ctx).Delete("cus_name=?", r.CusName)
+	return nil
+}
