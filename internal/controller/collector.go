@@ -114,3 +114,12 @@ func (a *collectorApi) EmptyPortScanTask(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// SearchPortScanDetails 端口扫描详情分页查询
+func (a *collectorApi) SearchPortScanDetails(r *ghttp.Request) {
+	taskName := r.Get("taskname").String()
+	if taskName == "" {
+		response.JsonExit(r, 201, "任务名错误")
+	}
+	r.Response.WriteJson(service.Collector.SearchPortScanDetails(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), taskName, r.Get("searchParams")))
+}

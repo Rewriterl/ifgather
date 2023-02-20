@@ -282,3 +282,42 @@ func (s *collectorService) EmptyPortScanTask(ctx context.Context) error {
 	}
 	return nil
 }
+
+// SearchPortScanDetails 端口扫描详情模糊分页查询
+func (s *collectorService) SearchPortScanDetails(ctx context.Context, page, limit int, task_name string, search interface{}) *model.UtilPortScanResultRes {
+	var (
+		result []*model.UtilPortscanResult
+	)
+	SearchModel := dao.UtilPortscanResult.Ctx(ctx).Clone() // 链式操作
+	SearchModel = SearchModel.Ctx(ctx).Where("cus_name=?", task_name)
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("host")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("host like ?", "%"+gconv.String(j.Get("host"))+"%")
+		}
+		if gconv.String(j.Get("port")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("port = ?", gconv.String(j.Get("port")))
+		}
+		if gconv.String(j.Get("servicename")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("service_name like ?", "%"+gconv.String(j.Get("servicename"))+"%")
+		}
+		if gconv.String(j.Get("title")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("title like ?", "%"+gconv.String(j.Get("title"))+"%")
+		}
+		if gconv.String(j.Get("url")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("url like ?", "%"+gconv.String(j.Get("url"))+"%")
+		}
+	}
+	count, _ := SearchModel.Ctx(ctx).Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Ctx(ctx).Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "端口扫描管理分页查询 数据库错误:%s", err.Error())
+			return &model.UtilPortScanResultRes{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.UtilPortScanResultRes{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	return &model.UtilPortScanResultRes{Code: 0, Msg: "ok", Count: int64(count), Data: result}
+}
