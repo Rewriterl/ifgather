@@ -80,6 +80,7 @@ func init() {
 			group.GET("/banalyze/details", controller.Collector.SearchBanalyzeDetails)
 			group.PUT("/banalyze", controller.Collector.UpdateBanalyze)
 			group.GET("/banalyze/scan", controller.Collector.ExecBanalyzeScan)
+			group.POST("/banalyzes", controller.Collector.BatchUploadBanalyze)
 		})
 	})
 }

@@ -540,3 +540,31 @@ func (s *collectorService) ExecBanalyzeScan(ctx context.Context, search interfac
 	}
 	return &model.ResAPiUtilBanalyzeInfo{Code: 0, Msg: "ok", Count: int64(len(result1)), Data: resultData}
 }
+
+// BatchUploadBanalyze 批量上传指纹
+func (s *collectorService) BatchUploadBanalyze(ctx context.Context, r []byte) (string, error) {
+	Wappalyzer, err := banalyze.LoadApps(r)
+	if err != nil {
+		return "", errors.New("json数据有误，指纹加载失败")
+	}
+	var resultData []*model.ApiUtilBanalyzeAddReq
+	for _, v := range Wappalyzer.Apps {
+		datastr, err := json.Marshal([]*banalyze.App{v})
+		if err != nil {
+			continue
+		}
+		resultData = append(resultData, &model.ApiUtilBanalyzeAddReq{
+			Key:         v.Name,
+			Description: v.Description,
+			Value:       string(datastr),
+		})
+	}
+	if len(resultData) == 0 {
+		return "", errors.New("指纹数据解析后为空，指纹加载失败")
+	}
+	_, err = dao.Banalyze.Ctx(ctx).Insert(resultData)
+	if err != nil {
+		return "", errors.New("指纹导入失败,可能是导入的数据在数据库中已存在")
+	}
+	return "指纹导入成功", nil
+}

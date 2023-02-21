@@ -6,6 +6,8 @@ import (
 	"github.com/Rewriterl/ifgather/internal/service"
 	"github.com/Rewriterl/ifgather/utility/response"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/os/gfile"
+	"github.com/gogf/gf/v2/os/gtime"
 )
 
 var Collector = new(collectorApi)
@@ -208,4 +210,23 @@ func (a *collectorApi) UpdateBanalyze(r *ghttp.Request) {
 // ExecBanalyzeScan 进行指纹识别
 func (a *collectorApi) ExecBanalyzeScan(r *ghttp.Request) {
 	r.Response.WriteJson(service.Collector.ExecBanalyzeScan(r.Context(), r.Get("searchParams")))
+}
+
+// BatchUploadBanalyze 批量上传指纹
+func (a *collectorApi) BatchUploadBanalyze(r *ghttp.Request) {
+	files := r.GetUploadFile("data")
+	if files == nil {
+		response.JsonExit(r, 201, "指纹上传数据有误")
+	}
+	files.Filename = gtime.TimestampMicroStr() + ".json"
+	fileName, err := files.Save(gfile.Temp())
+	if err != nil {
+		response.JsonExit(r, 201, "指纹上传失败")
+	}
+	jsonData := gfile.GetBytes(gfile.Join(gfile.Temp(), fileName))
+	msg, err := service.Collector.BatchUploadBanalyze(r.Context(), jsonData)
+	if err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	response.JsonExit(r, 200, msg)
 }
