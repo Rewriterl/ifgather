@@ -429,3 +429,17 @@ func (s *collectorService) DelBanalyze(ctx context.Context, r *model.BanalyzeAPi
 		return nil
 	}
 }
+
+// SearchBanalyzeDetails 查看指定指纹
+func (s *collectorService) SearchBanalyzeDetails(ctx context.Context, r *model.BanalyzeAPiDeteleReq) (string, error) {
+	one, err := dao.Banalyze.Ctx(ctx).Where("key=?", r.Key).One()
+	if one == nil {
+		return "", errors.New("指纹不存在")
+	}
+	var ba *model.Banalyze
+	_ = tools.TransToStruct(one, &ba)
+	if err != nil {
+		return "", err
+	}
+	return ba.Value, nil
+}
