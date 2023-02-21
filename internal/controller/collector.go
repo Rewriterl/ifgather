@@ -115,7 +115,7 @@ func (a *collectorApi) EmptyPortScanTask(r *ghttp.Request) {
 	}
 }
 
-// SearchPortScanDetails 端口扫描详情分页查询
+// SearchPortScanDetails 分页查询端口扫描详情
 func (a *collectorApi) SearchPortScanDetails(r *ghttp.Request) {
 	taskName := r.Get("taskname").String()
 	if taskName == "" {
@@ -124,11 +124,16 @@ func (a *collectorApi) SearchPortScanDetails(r *ghttp.Request) {
 	r.Response.WriteJson(service.Collector.SearchPortScanDetails(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), taskName, r.Get("searchParams")))
 }
 
-// GetPortScanEchartsInfo 端口扫描Echarts图表统计信息
+// GetPortScanEchartsInfo 获取端口扫描Echarts图表统计信息
 func (a *collectorApi) GetPortScanEchartsInfo(r *ghttp.Request) {
 	taskName := r.Get("taskname").String()
 	if taskName == "" {
 		response.JsonExit(r, 201, "任务名错误")
 	}
 	r.Response.WriteJson(service.Collector.GetPortScanEchartsInfo(r.Context(), taskName))
+}
+
+// SearchBanalyze 模糊分页查询web指纹
+func (a *collectorApi) SearchBanalyze(r *ghttp.Request) {
+	r.Response.WriteJson(service.Collector.SearchBanalyze(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }

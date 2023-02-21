@@ -232,7 +232,7 @@ func (s *collectorService) AddPortScanTask(ctx context.Context, r *model.UtilPor
 	return fmt.Sprintf("util-添加端口扫描任务成功,共计:%d台主机", IpSet.Size()), nil
 }
 
-// SearchPortScanTask 端口扫描管理模糊分页查询
+// SearchPortScanTask 端口扫描任务模糊分页查询
 func (s *collectorService) SearchPortScanTask(ctx context.Context, page, limit int, search interface{}) *model.UtilPortScanResManager {
 	var (
 		result []*model.UtilPortscanTask
@@ -336,4 +336,33 @@ func (s *collectorService) GetPortScanEchartsInfo(ctx context.Context, TaskName 
 		return nil
 	}
 	return &model.UtilPortScanResultResEchartsInfo{Code: 200, Msg: "ok", Data: result1, Data1: result2}
+}
+
+// SearchBanalyze web模糊分页查询指纹扫描任务
+func (s *collectorService) SearchBanalyze(ctx context.Context, page, limit int, search interface{}) *model.BanalyzeAPiManager {
+	var (
+		result []*model.Banalyze
+	)
+	SearchModel := dao.Banalyze.Ctx(ctx).Clone() // 链式操作
+	searchStr := gconv.String(search)
+	if search != "" {
+		j := gjson.New(searchStr)
+		if gconv.String(j.Get("key")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("key like ?", "%"+gconv.String(j.Get("key"))+"%")
+		}
+		if gconv.String(j.Get("description")) != "" {
+			SearchModel = SearchModel.Ctx(ctx).Where("description like ?", "%"+gconv.String(j.Get("description"))+"%")
+		}
+	}
+	count, _ := SearchModel.Ctx(ctx).Count()
+	if page > 0 && limit > 0 {
+		err := SearchModel.Ctx(ctx).Order("id desc").Limit((page-1)*limit, limit).Scan(&result)
+		if err != nil {
+			logger.WebLog.Warningf(ctx, "web指纹管理分页查询 数据库错误:%s", err.Error())
+			return &model.BanalyzeAPiManager{Code: 201, Msg: "查询失败,数据库错误", Count: 0, Data: nil}
+		}
+	} else {
+		return &model.BanalyzeAPiManager{Code: 201, Msg: "查询失败,分页参数有误", Count: 0, Data: nil}
+	}
+	return &model.BanalyzeAPiManager{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
