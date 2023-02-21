@@ -161,3 +161,18 @@ func (a *collectorApi) AddBanalyze(r *ghttp.Request) {
 	service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "信息收集-添加指纹", "添加指纹成功")
 	response.JsonExit(r, 200, msg)
 }
+
+// DelBanalyze 删除指定指纹
+func (a *collectorApi) DelBanalyze(r *ghttp.Request) {
+	var (
+		data *model.BanalyzeAPiDeteleReq
+	)
+	if err := r.Parse(&data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	if err := service.Collector.DelBanalyze(r.Context(), data); err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "信息收集-删除指纹", fmt.Sprintf("指纹名[%s]", data.Key))
+	response.JsonExit(r, 200, "ok")
+}

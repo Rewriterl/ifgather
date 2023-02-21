@@ -419,3 +419,13 @@ func (s *collectorService) AddBanalyze(ctx context.Context, r string) (string, e
 	msg := fmt.Sprintf("指纹识别成功:\n%s", string(mjson))
 	return msg, nil
 }
+
+// DelBanalyze 删除指定指纹
+func (s *collectorService) DelBanalyze(ctx context.Context, r *model.BanalyzeAPiDeteleReq) error {
+	_, err := dao.Banalyze.Ctx(ctx).Delete(g.Map{"key": r.Key})
+	if err != nil {
+		return err
+	} else {
+		return nil
+	}
+}
