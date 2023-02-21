@@ -204,3 +204,8 @@ func (a *collectorApi) UpdateBanalyze(r *ghttp.Request) {
 	}
 	response.JsonExit(r, 200, msg)
 }
+
+// ExecBanalyzeScan 进行指纹识别
+func (a *collectorApi) ExecBanalyzeScan(r *ghttp.Request) {
+	r.Response.WriteJson(service.Collector.ExecBanalyzeScan(r.Context(), r.Get("searchParams")))
+}

@@ -485,3 +485,58 @@ func (s *collectorService) UpdateBanalyze(ctx context.Context, r string) (string
 	msg := fmt.Sprintf("指纹识别成功:\n%s", string(mjson))
 	return msg, nil
 }
+
+// ExecBanalyzeScan 进行指纹识别
+func (s *collectorService) ExecBanalyzeScan(ctx context.Context, search interface{}) *model.ResAPiUtilBanalyzeInfo {
+	searchStr := gconv.String(search)
+	if searchStr == "" {
+		return &model.ResAPiUtilBanalyzeInfo{Code: 201, Msg: "请提交URL进行指纹识别", Count: 0, Data: nil}
+	}
+	j := gjson.New(searchStr)
+	if gconv.String(j.Get("url")) == "" {
+		return &model.ResAPiUtilBanalyzeInfo{Code: 201, Msg: "请提交URL进行指纹识别", Count: 0, Data: nil}
+	}
+	url := gconv.String(j.Get("url"))
+	all, err := dao.Banalyze.Ctx(ctx).Where("1=?", 1).All()
+	var banalyzes []*model.Banalyze
+	if err != nil {
+		return &model.ResAPiUtilBanalyzeInfo{Code: 201, Msg: "指纹识别失败,数据库查询指纹错误", Count: 0, Data: nil}
+	}
+	var exportData []*banalyze.App
+	_ = tools.TransToStructs(all, &banalyzes)
+	for _, v := range banalyzes {
+		jsonList, err := banalyze.LoadApps([]byte(v.Value))
+		if err != nil {
+			continue
+		}
+		exportData = append(exportData, jsonList.Apps[0])
+	}
+	if len(exportData) == 0 {
+		return &model.ResAPiUtilBanalyzeInfo{Code: 201, Msg: "指纹识别失败,无有效指纹库", Count: 0, Data: nil}
+	}
+	data, err := json.Marshal(exportData)
+	if err != nil {
+		return &model.ResAPiUtilBanalyzeInfo{Code: 201, Msg: "指纹识别失败,json序列化失败", Count: 0, Data: nil}
+	}
+	Wappalyzer, err := banalyze.LoadApps(data)
+	if err != nil {
+		return &model.ResAPiUtilBanalyzeInfo{Code: 201, Msg: "指纹识别失败,JSON反序列化失败", Count: 0, Data: nil}
+	}
+	result1, err := Wappalyzer.Analyze(url, 10)
+	if err != nil {
+		return &model.ResAPiUtilBanalyzeInfo{Code: 201, Msg: "指纹识别失败,请检查url是否能访问", Count: 0, Data: nil}
+	}
+	var resultData []*model.ResultApp
+	index := 1
+	for _, v := range result1 {
+		resultData = append(resultData, &model.ResultApp{
+			Id:          index,
+			Name:        v.Name,
+			Version:     strings.Join(v.Version, "\n"),
+			Implies:     strings.Join(v.Implies, ","),
+			Description: v.Description,
+		})
+		index++
+	}
+	return &model.ResAPiUtilBanalyzeInfo{Code: 0, Msg: "ok", Count: int64(len(result1)), Data: resultData}
+}
