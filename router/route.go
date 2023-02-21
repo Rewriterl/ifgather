@@ -74,6 +74,7 @@ func init() {
 			group.GET("/portscan/details", controller.Collector.SearchPortScanDetails)
 			group.GET("/portscan/echarts", controller.Collector.GetPortScanEchartsInfo)
 			group.GET("/banalyze", controller.Collector.SearchBanalyze)
+			group.DELETE("/banalyze/all", controller.Collector.EmptyBanalyze)
 		})
 	})
 }

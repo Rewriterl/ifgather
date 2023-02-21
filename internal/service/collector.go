@@ -366,3 +366,12 @@ func (s *collectorService) SearchBanalyze(ctx context.Context, page, limit int, 
 	}
 	return &model.BanalyzeAPiManager{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
+
+// EmptyBanalyze 清空所有web指纹数据
+func (s *collectorService) EmptyBanalyze(ctx context.Context) error {
+	if _, err := dao.Banalyze.Ctx(ctx).Delete("1=1"); err != nil {
+		logger.WebLog.Warningf(ctx, "清空web指纹失败 数据库错误:%s", err.Error())
+		return err
+	}
+	return nil
+}

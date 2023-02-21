@@ -137,3 +137,13 @@ func (a *collectorApi) GetPortScanEchartsInfo(r *ghttp.Request) {
 func (a *collectorApi) SearchBanalyze(r *ghttp.Request) {
 	r.Response.WriteJson(service.Collector.SearchBanalyze(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), r.Get("searchParams")))
 }
+
+// EmptyBanalyze 清空所有web指纹数据
+func (a *collectorApi) EmptyBanalyze(r *ghttp.Request) {
+	if err := service.Collector.EmptyBanalyze(r.Context()); err != nil {
+		response.JsonExit(r, 201, "清空web指纹数据失败,数据库错误")
+	} else {
+		service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "web指纹清空数据", "清空数据成功")
+		response.JsonExit(r, 200, "ok")
+	}
+}
