@@ -147,3 +147,17 @@ func (a *collectorApi) EmptyBanalyze(r *ghttp.Request) {
 		response.JsonExit(r, 200, "ok")
 	}
 }
+
+// AddBanalyze 添加指纹
+func (a *collectorApi) AddBanalyze(r *ghttp.Request) {
+	data := r.GetBodyString()
+	if len(data) == 0 {
+		response.JsonExit(r, 201, "请提交json指纹数据")
+	}
+	msg, err := service.Collector.AddBanalyze(r.Context(), data)
+	if err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	service.User.AddUserOptLog(r.Context(), r.GetRemoteIp(), "信息收集-添加指纹", "添加指纹成功")
+	response.JsonExit(r, 200, msg)
+}

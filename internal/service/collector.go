@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/Rewriterl/ifgather/internal/dao"
 	"github.com/Rewriterl/ifgather/internal/model"
+	"github.com/Rewriterl/ifgather/utility/banalyze"
 	"github.com/Rewriterl/ifgather/utility/logger"
 	"github.com/Rewriterl/ifgather/utility/nsq/producer"
 	"github.com/Rewriterl/ifgather/utility/tools"
@@ -374,4 +376,46 @@ func (s *collectorService) EmptyBanalyze(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+// AddBanalyze 添加指纹
+func (s *collectorService) AddBanalyze(ctx context.Context, r string) (string, error) {
+	Wappalyzer, err := banalyze.LoadApps([]byte(r))
+	if err != nil {
+		logger.WebLog.Warningf(ctx, "指纹json数据解析失败:%s", err.Error())
+		return "", errors.New("JSON数据解析失败,请检查")
+	}
+	if len(Wappalyzer.Apps) != 1 {
+		return "", errors.New("只允许提交单条指纹")
+	}
+	banalyzeName := Wappalyzer.Apps[0].Name
+	banalyzeWebsite := Wappalyzer.Apps[0].Website
+	banalyzeDescription := Wappalyzer.Apps[0].Description
+	if strings.Trim(banalyzeName, " ") == "" || strings.Trim(banalyzeWebsite, " ") == "" || strings.Trim(banalyzeDescription, " ") == "" {
+		return "", errors.New("缺少必须参数字段,请检查")
+	}
+	count, err := dao.Banalyze.Ctx(ctx).Where("key=?", banalyzeName).Count()
+	if err != nil {
+		return "", errors.New("数据库查询错误")
+	}
+	if count > 0 {
+		return "", errors.New("该指纹名数据库已存在,请更换指纹名")
+	}
+	result, err := Wappalyzer.Analyze(banalyzeWebsite, 10)
+	if err != nil {
+		return "", errors.New("指纹识别错误,请检查url是否能访问等问题")
+	}
+	if len(result) == 0 {
+		return "", errors.New("指纹识别无匹配结果,请检查")
+	}
+	_, err = dao.Banalyze.Ctx(ctx).Insert(g.Map{"key": banalyzeName, "description": banalyzeDescription, "value": r})
+	if err != nil {
+		return "", errors.New("指纹识别成功,但插入到数据库失败")
+	}
+	mjson, err := json.Marshal(result)
+	if err != nil {
+		return "", errors.New("指纹识别成功,json序列化失败")
+	}
+	msg := fmt.Sprintf("指纹识别成功:\n%s", string(mjson))
+	return msg, nil
 }
