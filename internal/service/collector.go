@@ -321,3 +321,19 @@ func (s *collectorService) SearchPortScanDetails(ctx context.Context, page, limi
 	}
 	return &model.UtilPortScanResultRes{Code: 0, Msg: "ok", Count: int64(count), Data: result}
 }
+
+func (s *collectorService) GetPortScanEchartsInfo(ctx context.Context, TaskName string) interface{} {
+	var result1 []model.UtilPortScanResultResEchartsInfos
+	var result2 []model.UtilPortScanResultResEchartsInfos1
+	err := dao.UtilPortscanResult.Ctx(ctx).Fields("COUNT(service_name) Number, service_name").
+		Where("cus_name=?", TaskName).Group("service_name").Limit(10).Scan(&result1)
+	if err != nil {
+		return nil
+	}
+	err = dao.UtilPortscanResult.Ctx(ctx).Fields("COUNT(port) Number, port").
+		Where("cus_name=?", TaskName).Group("port").Limit(10).Scan(&result2)
+	if err != nil {
+		return nil
+	}
+	return &model.UtilPortScanResultResEchartsInfo{Code: 200, Msg: "ok", Data: result1, Data1: result2}
+}

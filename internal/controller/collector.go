@@ -123,3 +123,12 @@ func (a *collectorApi) SearchPortScanDetails(r *ghttp.Request) {
 	}
 	r.Response.WriteJson(service.Collector.SearchPortScanDetails(r.Context(), r.Get("page").Int(), r.Get("limit").Int(), taskName, r.Get("searchParams")))
 }
+
+// GetPortScanEchartsInfo 端口扫描Echarts图表统计信息
+func (a *collectorApi) GetPortScanEchartsInfo(r *ghttp.Request) {
+	taskName := r.Get("taskname").String()
+	if taskName == "" {
+		response.JsonExit(r, 201, "任务名错误")
+	}
+	r.Response.WriteJson(service.Collector.GetPortScanEchartsInfo(r.Context(), taskName))
+}
