@@ -191,3 +191,16 @@ func (a *collectorApi) SearchBanalyzeDetails(r *ghttp.Request) {
 		response.JsonExit(r, 200, msg)
 	}
 }
+
+// UpdateBanalyze 修改指纹
+func (a *collectorApi) UpdateBanalyze(r *ghttp.Request) {
+	data := r.GetBodyString()
+	if len(data) == 0 {
+		response.JsonExit(r, 201, "请提交json指纹数据")
+	}
+	msg, err := service.Collector.UpdateBanalyze(r.Context(), data)
+	if err != nil {
+		response.JsonExit(r, 201, err.Error())
+	}
+	response.JsonExit(r, 200, msg)
+}

@@ -78,6 +78,7 @@ func init() {
 			group.POST("/banalyze", controller.Collector.AddBanalyze)
 			group.DELETE("/banalyze", controller.Collector.DelBanalyze)
 			group.GET("/banalyze/details", controller.Collector.SearchBanalyzeDetails)
+			group.PUT("/banalyze", controller.Collector.UpdateBanalyze)
 		})
 	})
 }
