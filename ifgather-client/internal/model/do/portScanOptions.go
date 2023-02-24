@@ -1,4 +1,4 @@
-package entity
+package do
 
 // 端口扫描所需参数
 type Options struct {

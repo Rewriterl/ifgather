@@ -1,4 +1,4 @@
-package entity
+package do
 
 import (
 	"fmt"
@@ -98,7 +98,6 @@ func flatten(m map[int]struct{}) (s []int) {
 	for k := range m {
 		s = append(s, k)
 	}
-
 	sort.Ints(s)
 	return
 }
