@@ -1,15 +1,24 @@
 package webinfo
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"github.com/Rewriterl/ifgather-client/internal/logic/webinfo/banalyze"
+	"github.com/Rewriterl/ifgather-client/internal/logic/webinfo/gospider"
+	"github.com/Rewriterl/ifgather-client/utility/config"
+	"github.com/Rewriterl/ifgather-client/utility/logger"
 	"github.com/axgle/mahonia"
+	"github.com/gogf/gf/v2/crypto/gmd5"
 	"github.com/gogf/gf/v2/encoding/ghtml"
+	"github.com/gogf/gf/v2/os/grpool"
 	"github.com/gogf/gf/v2/text/gregex"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/parnurzeal/gorequest"
 	"github.com/saintfish/chardet"
+	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -45,8 +54,104 @@ type HttpInfo struct {
 	Timeout       int
 }
 
+func (d *Detection) GetWebInfo() []*ResultWebInfo {
+	var GResultWebInfo []*ResultWebInfo
+	pool := grpool.New(20)
+	wg := sync.WaitGroup{}
+	resultChanl := make(chan *HttpInfo, len(d.SubDomain))
+	for _, v := range d.SubDomain {
+		wg.Add(1)
+		tmp := v
+		pool.Add(context.Background(), func(ctx context.Context) {
+			getHttp := HttpInfo{SubDomain: tmp, ServiceName: d.ServiceName, Port: d.Port, Timeout: config.Gconf.WebInfo.WappalyzerTimeout}
+			getHttp.SendHttpOrHttps()
+			if getHttp.StatusCode != 0 {
+				resultChanl <- &getHttp
+			}
+			defer wg.Done()
+		})
+	}
+	wg.Wait()
+	close(resultChanl)
+	exclude := make(map[string]struct{})
+	for v := range resultChanl {
+		key := gconv.String(v.ContentLength) + gconv.String(v.StatusCode) + v.Title
+		md5, err := gmd5.EncryptString(key)
+		if err != nil {
+			logger.LogWebInfo.Warningf(context.Background(), "md5加密失败: %s", err)
+			continue
+		}
+
+		if _, ok := exclude[md5]; ok {
+			exclude[md5] = struct{}{}
+			GResultWebInfo = append(GResultWebInfo, &ResultWebInfo{
+				Url:           v.Url,
+				StatusCode:    v.StatusCode,
+				Title:         v.Title,
+				ContentLength: v.ContentLength,
+			})
+		}
+		logger.LogWebInfo.Debugf(context.Background(), "%s %s", v.Url, v.Title)
+	}
+
+	banalyze.LoadApps(config.Gconf.Banalyze)
+	banalyzeChanl := make(chan map[string]map[string]*banalyze.ResultApp, len(GResultWebInfo))
+	wg1 := sync.WaitGroup{}
+	for _, v := range GResultWebInfo {
+		wg1.Add(1)
+		go func(tmpurl string) {
+			res, err := banalyze.Gbanalyze.Analyze(tmpurl, config.Gconf.WebInfo.WappalyzerTimeout)
+			if err == nil {
+				banalyzeChanl <- map[string]map[string]*banalyze.ResultApp{tmpurl: res}
+			}
+			defer wg1.Done()
+		}(v.Url)
+	}
+	wg1.Wait()
+	close(banalyzeChanl)
+	for key := range banalyzeChanl {
+		for k := range key {
+			InsertResults(k, key[k], GResultWebInfo)
+		}
+	}
+
+	for _, v := range GResultWebInfo {
+		if v.StatusCode != 200 {
+			continue
+		}
+		spiderURL, err := url.Parse(v.Url)
+		if err != nil {
+			logger.LogWebInfo.Warningf(context.Background(), "爬虫-URL解析错误:%s", err.Error())
+			continue
+		}
+		spider := gospider.Requireds{
+			SiteUrl:    spiderURL,
+			TimeOuT:    int64(config.Gconf.WebInfo.SpiderTimeout),
+			MaxDepth:   config.Gconf.WebInfo.MaxDepth,
+			Concurrent: config.Gconf.WebInfo.Concurrent,
+			Delay:      1,
+		}
+		crawler, err := spider.NewCrawler()
+		if err != nil {
+			logger.LogWebInfo.Warningf(context.Background(), "爬虫-启动爬虫错误:%s", err.Error())
+			continue
+		}
+		crawler.Start(true)
+		v.Js = crawler.JsSet.Slice()
+		v.Urls = crawler.UrlSet.Slice()
+		v.Forms = crawler.FormSet.Slice()
+		v.Keys = crawler.KeySet.Slice()
+		v.SubDomaina = crawler.SubSet.Slice()
+	}
+
+	for _, v := range GResultWebInfo {
+		logger.LogWebInfo.Debugf(context.Background(), "爬虫结果：%s js文件:%d URL:%d 子域名:%d 敏感信息:%d", v.Url, len(v.Js), len(v.Urls), len(v.SubDomaina), len(v.Keys))
+	}
+	return GResultWebInfo
+}
+
 // 发送HTTP数据包
-func (h *HttpInfo) SendHttp() {
+func (h *HttpInfo) SendHttpOrHttps() {
 	if strings.Contains(h.ServiceName, "http") && !strings.Contains(h.ServiceName, "https") {
 		h.Url = fmt.Sprintf("https://%s:%d", h.SubDomain, h.Port)
 		err := h.SendHttp1()
@@ -109,4 +214,16 @@ func (h *HttpInfo) ConvertToString(src string, srcCode string, tagCode string) s
 	_, cdata, _ := tagCoder.Translate([]byte(srcResult), true)
 	result := string(cdata)
 	return result
+}
+
+// InsertResults
+func InsertResults(k string, data map[string]*banalyze.ResultApp, GResultWebInfo []*ResultWebInfo) {
+	for i, v := range GResultWebInfo {
+		if k == v.Url {
+			GResultWebInfo[i].Banalyze = data
+			for _, v1 := range data {
+				logger.LogWebInfo.Debugf(context.Background(), "指纹识别结果：%s: %s %s %s", k, v1.Name, v1.Version, v1.Description)
+			}
+		}
+	}
 }
