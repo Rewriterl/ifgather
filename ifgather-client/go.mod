@@ -10,6 +10,7 @@ require (
 	github.com/gogf/gf v1.16.9
 	github.com/gogf/gf/v2 v2.1.4
 	github.com/mingrammer/commonregex v1.0.1
+	github.com/nsqio/go-nsq v1.1.0
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/projectdiscovery/fdmax v0.0.4
