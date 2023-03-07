@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
+	conf "github.com/Rewriterl/ifgather-client/utility/config"
 	"github.com/nsqio/go-nsq"
 	"os"
 	"time"
 
 	web "github.com/Rewriterl/ifgather-client/internal/logic/webinfo"
-	conf "github.com/Rewriterl/ifgather-client/utility/config"
 	"github.com/Rewriterl/ifgather-client/utility/logger"
 	Gnsq "github.com/Rewriterl/ifgather-client/utility/nsq"
 	"github.com/Rewriterl/ifgather-client/utility/nsq/Production"
@@ -23,9 +23,9 @@ type Handler struct {
 // web探测 初始化消费者
 func InitConsumer(topic string, channel string) {
 	config := nsq.NewConfig()
-	config.MsgTimeout = 59 * time.Minute        // 消息反馈超时时间
-	config.HeartbeatInterval = 20 * time.Second // 心跳时间
-	//config.MsgTimeout = time.Duration(int64(conf.Gconf.Domain.NsqTimeout)) * time.Second // 设置消息反馈超时时间
+	config.MsgTimeout = 59 * time.Minute                                                 // 消息反馈超时时间
+	config.HeartbeatInterval = 20 * time.Second                                          // 心跳时间
+	config.MsgTimeout = time.Duration(int64(conf.Gconf.Domain.NsqTimeout)) * time.Second // 设置消息反馈超时时间
 	if err := config.Validate(); err != nil {
 		logger.LogWebInfo.Fatalf(context.Background(), "[-] [消费者] 配置文件错误:%s", err.Error())
 	}

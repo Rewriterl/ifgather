@@ -34,6 +34,7 @@ func init() {
 			group.GET("/", controller.Users.SearchUser)
 		})
 		group.Group("/scan", func(group *ghttp.RouterGroup) {
+			group.GET("/client/info", controller.Scan.GetApiKeyEngine)
 			group.Middleware(service.Middleware.Auth)
 			group.POST("/engine/nsq", controller.Scan.SetNsqEngine)
 			group.POST("/engine/portscan", controller.Scan.SetPortScanEngine)
@@ -43,7 +44,6 @@ func init() {
 			group.GET("/engine/nsq/portscan", controller.Scan.NsqPortScanStat)
 			group.GET("/engine/nsq/subdomain", controller.Scan.NsqSubDomainStat)
 			group.GET("/engine/nsq/webinfo", controller.Scan.NsqWebInfoStat)
-			group.GET("/client/info", controller.Scan.GetApiKeyEngine)
 			group.DELETE("/engine/emptydomain", controller.Scan.EmptyDomain)
 			group.DELETE("/engine/emptyport", controller.Scan.EmptyPort)
 			group.DELETE("/engine/emptywebinfo", controller.Scan.EmptyWebInfo)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"github.com/gogf/gf/v2/container/gset"
 	"net"
 	"net/http"
 	"net/url"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
-	"github.com/gogf/gf/container/gset"
 
 	cregex "github.com/mingrammer/commonregex"
 )

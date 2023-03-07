@@ -7,7 +7,6 @@ require (
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
 	github.com/elazarl/goproxy v0.0.0-20221015165544-a0805db90819 // indirect
 	github.com/gocolly/colly/v2 v2.1.0
-	github.com/gogf/gf v1.16.9
 	github.com/gogf/gf/v2 v2.1.4
 	github.com/mingrammer/commonregex v1.0.1
 	github.com/nsqio/go-nsq v1.1.0

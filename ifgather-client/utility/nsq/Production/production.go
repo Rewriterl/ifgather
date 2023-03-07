@@ -1,15 +1,15 @@
 package Production
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/gogf/gf/v2/encoding/gbase64"
+	"github.com/gogf/gf/v2/encoding/gjson"
+	"github.com/gogf/gf/v2/frame/g"
 	"strings"
 
 	"github.com/Rewriterl/ifgather-client/utility/config"
-
-	"github.com/gogf/gf/encoding/gbase64"
-	"github.com/gogf/gf/encoding/gjson"
-	"github.com/gogf/gf/frame/g"
 )
 
 // 往topic中投递消息
@@ -20,7 +20,7 @@ func SendTopicMessages(topicName string, data interface{}) error {
 	}
 	msgStr := gbase64.EncodeString(sendStr)
 	Url := fmt.Sprintf("http://%s/pub?topic=%s", config.Gconf.Nsq.NsqHttp, topicName)
-	resp, err := g.Client().Post(Url, msgStr)
+	resp, err := g.Client().Post(context.Background(), Url, msgStr)
 	defer func() {
 		if resp != nil {
 			resp.Close()
