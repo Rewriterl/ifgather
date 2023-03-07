@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
+	github.com/cgboal/sonarsearch v0.0.0-20220110222754-ddd8c134e2e4
 	github.com/elazarl/goproxy v0.0.0-20221015165544-a0805db90819 // indirect
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/gogf/gf/v2 v2.1.4
@@ -18,5 +19,6 @@ require (
 	github.com/smartystreets/goconvey v1.7.2 // indirect
 	github.com/yl2chen/cidranger v1.0.2
 	golang.org/x/net v0.7.0
+	google.golang.org/grpc v1.40.0
 	moul.io/http2curl v1.0.0 // indirect
 )
