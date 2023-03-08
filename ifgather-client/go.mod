@@ -17,6 +17,7 @@ require (
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/retryabledns v1.0.21
+	github.com/rakyll/statik v0.1.7
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d
 	github.com/smartystreets/goconvey v1.7.2 // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
