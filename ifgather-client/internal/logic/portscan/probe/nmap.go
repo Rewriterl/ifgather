@@ -110,7 +110,7 @@ func (N *NmapProbe) Init() {
 	logger.LogPortScan.Debugf(context.Background(), "[+] 指纹加载成功，共计[%d]个探针,[%d]条正则,[%d]条TCP端口指纹", len(N.Probes), N.Count(), len(N.Services))
 }
 
-// 统计指纹库中正则条数
+// Count 统计指纹库中正则条数
 func (N *NmapProbe) Count() int {
 	count := 0
 	for _, probe := range N.Probes {
@@ -325,7 +325,7 @@ func (p *Probe) parseRarity(data string) {
 	p.Rarity, _ = strconv.Atoi(string(data[len("rarity")+1:]))
 }
 
-// 解析探针数据包
+// DecodePattern 解析探针数据包
 func DecodePattern(s string) ([]byte, error) {
 	sByteOrigin := []byte(s)
 	matchRe := regexp.MustCompile(`\\(x[0-9a-fA-F]{2}|[0-7]{1,3}|[aftnrv])`)
@@ -382,7 +382,7 @@ func isReChar(n int64) bool {
 	return false
 }
 
-// socket发送探测数据包编码
+// DecodeData socket发送探测数据包编码
 func DecodeData(s string) ([]byte, error) {
 	sByteOrigin := []byte(s)
 	matchRe := regexp.MustCompile(`\\(x[0-9a-fA-F]{2}|[0-7]{1,3}|[aftnrv])`)
@@ -472,7 +472,7 @@ func (N *NmapProbe) regxRespone(response []byte, matchtmp []*Match, Fallback str
 	return false, &extras
 }
 
-// 正则匹配respone内容
+// MatchPattern 正则匹配respone内容
 func (m *Match) MatchPattern(response []byte) (matched bool) {
 	responseStr := string([]rune(string(response)))
 	foundItems := m.PatternCompiled.FindStringSubmatch(responseStr)
@@ -483,7 +483,7 @@ func (m *Match) MatchPattern(response []byte) (matched bool) {
 	return false
 }
 
-// 正则匹配respone成功，取出相应的内容
+// ParseVersionInfo 正则匹配respone成功，取出相应的内容
 func (m *Match) ParseVersionInfo(response []byte) Extras {
 	var extras = Extras{}
 
@@ -620,7 +620,7 @@ func (N *NmapProbe) grabResponse(addr string, Indexes, SocketTimeout int) ([]byt
 	return response, nil
 }
 
-// 解析常见端口协议
+// ServiceParse 解析常见端口协议
 func (N *NmapProbe) ServiceParse(data []byte) {
 	linesTemp := strings.Split(string(data), "\n")
 	servicesmap := make(map[int]string, 0)
@@ -641,7 +641,7 @@ func (N *NmapProbe) ServiceParse(data []byte) {
 	N.Services = servicesmap
 }
 
-// 定义返回结果
+// Task 定义返回结果
 type Task struct {
 	Addr          string
 	ServiceNmae   string
@@ -653,7 +653,7 @@ type Task struct {
 	Title         string
 }
 
-// 常规服务直接返回，不进行指纹探测
+// DefaultProbes 常规服务直接返回，不进行指纹探测
 func DefaultProbes(port string) string {
 	var defaults = make(map[string]string, 0)
 	defaults["80"] = "http"
@@ -668,7 +668,7 @@ func DefaultProbes(port string) string {
 	}
 }
 
-// 单端口 指纹探测
+// ScanWithProbe 单端口 指纹探测
 func (N *NmapProbe) ScanWithProbe(host, port string, SocketTimeout int, resultChan chan *Task) {
 	// 节约探测时间，常规端口不探测直接返回
 	v := DefaultProbes(port)
@@ -698,15 +698,15 @@ func (N *NmapProbe) ScanWithProbe(host, port string, SocketTimeout int, resultCh
 			}
 		}
 		// 组合优先级为一的协议
-		if N.Probes[i].Rarity == 1 && !isexclude(excludeIndex, i) {
+		if N.Probes[i].Rarity == 1 && !isExclude(excludeIndex, i) {
 			oneProbe = append(oneProbe, i)
 		}
 		// 组合优先级小于6的协议
-		if N.Probes[i].Rarity != 1 && N.Probes[i].Rarity < 6 && !isexclude(excludeIndex, i) {
+		if N.Probes[i].Rarity != 1 && N.Probes[i].Rarity < 6 && !isExclude(excludeIndex, i) {
 			sixProbe = append(sixProbe, i)
 		}
 		// 组合剩余的协议
-		if N.Probes[i].Rarity >= 6 && !isexclude(excludeIndex, i) {
+		if N.Probes[i].Rarity >= 6 && !isExclude(excludeIndex, i) {
 			nineProbe = append(nineProbe, i)
 		}
 	}
@@ -816,7 +816,7 @@ func (N *NmapProbe) ScanWithProbe(host, port string, SocketTimeout int, resultCh
 }
 
 // 判断元素是否存在
-func isexclude(m []int, value int) bool {
+func isExclude(m []int, value int) bool {
 	if len(m) == 0 {
 		return false
 	}
@@ -828,7 +828,7 @@ func isexclude(m []int, value int) bool {
 	return false
 }
 
-// 组合host
+// GetAddress 组合host
 func GetAddress(ip, port string) string {
 	return ip + ":" + port
 }
@@ -852,7 +852,7 @@ func (N *NmapProbe) taskSocket(address string, Indexes, SocketTimeout int, taskC
 	}
 }
 
-// 返回默认端口对应的指纹
+// ServiceFind 返回默认端口对应的指纹
 func (N *NmapProbe) ServiceFind(port string) (string, bool) {
 	portint, _ := strconv.Atoi(port)
 	vaule, ok := N.Services[portint]
@@ -863,7 +863,7 @@ func (N *NmapProbe) ServiceFind(port string) (string, bool) {
 	}
 }
 
-// web服务探测
+// HttpCheck web服务探测
 func (N *NmapProbe) HttpCheck(task *Task, timeout int) {
 	if !strings.Contains(task.ServiceNmae, "http") && !strings.Contains(task.ServiceNmae, "ssl") {
 		return
@@ -878,7 +878,7 @@ func (N *NmapProbe) HttpCheck(task *Task, timeout int) {
 	SendHttp(url, timeout, task)
 }
 
-// 发送HTTP数据包
+// SendHttp 发送HTTP数据包
 func SendHttp(url string, timeout int, task *Task) {
 	resp, body, err := gorequest.New().
 		Get(url).
@@ -916,7 +916,7 @@ func getTitle(s string) string {
 	return ConvertToString(ghtml.SpecialChars(title), "GBK", "utf-8")
 }
 
-// 编码转换成utf-8编码
+// ConvertToString 编码转换成utf-8编码
 func ConvertToString(src string, srcCode string, tagCode string) string {
 	srcCoder := mahonia.NewDecoder(srcCode)
 	srcResult := srcCoder.ConvertString(src)
