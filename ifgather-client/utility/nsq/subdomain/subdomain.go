@@ -9,7 +9,7 @@ import (
 	conf "github.com/Rewriterl/ifgather-client/utility/config"
 	"github.com/Rewriterl/ifgather-client/utility/logger"
 	Gnsq "github.com/Rewriterl/ifgather-client/utility/nsq"
-	"github.com/Rewriterl/ifgather-client/utility/nsq/Production"
+	"github.com/Rewriterl/ifgather-client/utility/nsq/production"
 	"github.com/gogf/gf/v2/text/gstr"
 	"github.com/nsqio/go-nsq"
 	"os"
@@ -112,7 +112,7 @@ func SendMessage(r []*dnsprobe.ResSubdomain, n NsqPushDomain) error {
 			index++
 			SendDatatmp = append(SendDatatmp, v)
 			if index >= 100 {
-				err := Production.SendTopicMessages(Gnsq.RSubDomainTopic, SendDatatmp)
+				err := production.SendTopicMessages(Gnsq.RSubDomainTopic, SendDatatmp)
 				if err != nil {
 					logger.LogPortScan.Warningf(context.Background(), "[-] 投递消息失败:%s", err.Error())
 					return err
@@ -123,7 +123,7 @@ func SendMessage(r []*dnsprobe.ResSubdomain, n NsqPushDomain) error {
 			}
 		}
 		if len(SendDatatmp) != 0 {
-			err := Production.SendTopicMessages(Gnsq.RSubDomainTopic, SendDatatmp)
+			err := production.SendTopicMessages(Gnsq.RSubDomainTopic, SendDatatmp)
 			if err != nil {
 				logger.LogPortScan.Warningf(context.Background(), "[-] 投递消息失败:%s", err.Error())
 				return err
@@ -131,7 +131,7 @@ func SendMessage(r []*dnsprobe.ResSubdomain, n NsqPushDomain) error {
 		}
 		return nil
 	}
-	err := Production.SendTopicMessages(Gnsq.RSubDomainTopic, SendData)
+	err := production.SendTopicMessages(Gnsq.RSubDomainTopic, SendData)
 	if err != nil {
 		logger.LogPortScan.Warningf(context.Background(), "[-] 投递消息失败:%s", err.Error())
 	}
@@ -145,7 +145,7 @@ func SendMessageFail(n NsqPushDomain) error {
 		Domain:    n.Domain,
 		Subdomain: "null",
 	}}
-	err := Production.SendTopicMessages(Gnsq.RSubDomainTopic, SendData)
+	err := production.SendTopicMessages(Gnsq.RSubDomainTopic, SendData)
 	if err != nil {
 		logger.LogPortScan.Warningf(context.Background(), "[-] 投递消息失败:%s", err.Error())
 		return err

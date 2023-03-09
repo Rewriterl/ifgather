@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"github.com/Rewriterl/ifgather-server/internal/model"
-	Gnsq "github.com/Rewriterl/ifgather-server/utility/nsq"
 	"github.com/Rewriterl/ifgather-server/utility/nsq/producer"
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/os/gfile"
@@ -30,7 +29,7 @@ func TransToStructs(all gdb.Result, out interface{}) error {
 }
 
 func GetNsqResInfo(ctx context.Context, topic string, channel string) *model.NsqResInfo {
-	jsondata, err := producer.NsqStatsInfo(ctx, Gnsq.SubDomainTopic)
+	jsondata, err := producer.NsqStatsInfo(ctx, topic)
 	if err != nil {
 		return &model.NsqResInfo{Code: 0, Msg: "获取消息队列信息失败", Count: 0, Data: nil}
 	}

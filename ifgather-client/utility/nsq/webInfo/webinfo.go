@@ -12,7 +12,7 @@ import (
 	web "github.com/Rewriterl/ifgather-client/internal/logic/webinfo"
 	"github.com/Rewriterl/ifgather-client/utility/logger"
 	Gnsq "github.com/Rewriterl/ifgather-client/utility/nsq"
-	"github.com/Rewriterl/ifgather-client/utility/nsq/Production"
+	"github.com/Rewriterl/ifgather-client/utility/nsq/production"
 )
 
 // web探测扫描 消费者类型
@@ -119,7 +119,7 @@ func SendMessage(cusName string, host string, r SendMessageStruct) error {
 			SendDatatmp = append(SendDatatmp, v)
 			if index >= 10 {
 				SendData.Data = SendDatatmp
-				if err := Production.SendTopicMessages(Gnsq.RWebInfoTopic, SendData); err != nil {
+				if err := production.SendTopicMessages(Gnsq.RWebInfoTopic, SendData); err != nil {
 					logger.LogDomain.Warningf(context.Background(), "[-] 投递消息失败:%s", err.Error())
 					return err
 				}
@@ -129,14 +129,14 @@ func SendMessage(cusName string, host string, r SendMessageStruct) error {
 			}
 		}
 		if len(SendDatatmp) != 0 {
-			if err := Production.SendTopicMessages(Gnsq.RWebInfoTopic, SendData); err != nil {
+			if err := production.SendTopicMessages(Gnsq.RWebInfoTopic, SendData); err != nil {
 				logger.LogDomain.Warningf(context.Background(), "[-] 投递消息失败:%s", err.Error())
 				return err
 			}
 		}
 		return nil
 	} else {
-		err := Production.SendTopicMessages(Gnsq.RWebInfoTopic, r)
+		err := production.SendTopicMessages(Gnsq.RWebInfoTopic, r)
 		if err != nil {
 			logger.LogDomain.Warningf(context.Background(), "[-] 投递消息失败:%s", err.Error())
 			return err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	_ "github.com/Rewriterl/ifgather-client/internal/logic/portscan/probe/statik"
 	"github.com/Rewriterl/ifgather-client/utility/logger"
 	"github.com/axgle/mahonia"
 	"github.com/gogf/gf/v2/encoding/ghtml"

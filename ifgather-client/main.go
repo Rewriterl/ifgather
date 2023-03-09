@@ -5,6 +5,7 @@ import (
 	_ "github.com/Rewriterl/ifgather-client/utility/config"
 	_ "github.com/Rewriterl/ifgather-client/utility/logger"
 	Gnsq "github.com/Rewriterl/ifgather-client/utility/nsq"
+	portScan "github.com/Rewriterl/ifgather-client/utility/nsq/portscan"
 	"github.com/Rewriterl/ifgather-client/utility/nsq/subdomain"
 	"github.com/Rewriterl/ifgather-client/utility/nsq/webInfo"
 	"github.com/gogf/gf/v2/frame/g"
@@ -25,6 +26,11 @@ func main() {
 	if domain.Bool() {
 		log.Println("[+] 子域名模块开启")
 		subdomain.InitConsumer(Gnsq.SubDomainTopic, Gnsq.SubDomainChanl)
+	}
+	portscan, _ := g.Cfg().Get(context.Background(), "portscan.enabled")
+	if portscan.Bool() {
+		log.Println("[+] 端口扫描模块开启")
+		portScan.Init()
 	}
 	c := make(chan os.Signal)        // 定义一个信号的通道
 	signal.Notify(c, syscall.SIGINT) // 转发键盘中断信号到c
