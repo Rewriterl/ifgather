@@ -9,12 +9,14 @@ require (
 	github.com/elazarl/goproxy v0.0.0-20221015165544-a0805db90819 // indirect
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/gogf/gf/v2 v2.1.4
+	github.com/google/gopacket v1.1.19 // indirect
 	github.com/json-iterator/go v1.1.11
 	github.com/lib/pq v1.10.7
 	github.com/miekg/dns v1.1.50
 	github.com/mingrammer/commonregex v1.0.1
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/parnurzeal/gorequest v0.2.16
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5 // indirect
 	github.com/projectdiscovery/fdmax v0.0.4
 	github.com/projectdiscovery/retryabledns v1.0.21
 	github.com/rakyll/statik v0.1.7
