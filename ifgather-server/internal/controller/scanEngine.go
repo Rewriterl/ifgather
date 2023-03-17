@@ -105,7 +105,7 @@ func (a *scanApi) GetApiKeyEngine(r *ghttp.Request) {
 		response.JsonExit(r, 201, "Web未配置同步密码")
 	}
 	if pwd == password {
-		r.Response.WriteJson(service.ScanEngine.GetApiKeyEngine(r.Context()))
+		response.JsonExit(r, 200, "查询成功", service.ScanEngine.GetApiKeyEngine(r.Context()))
 	} else {
 		response.JsonExit(r, 201, "密码错误")
 	}
