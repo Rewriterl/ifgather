@@ -211,17 +211,17 @@ func (s *scanEngineService) GetApiKeyEngine(ctx context.Context) *model.ResApiKe
 		if err == nil {
 			err = gconv.Struct(j, &structs)
 			if err == nil {
-				structs.Binaryedge = "******"
-				structs.CensysSecret = "******"
-				structs.CensysToken = "******"
-				structs.Certspotter = "******"
-				structs.GitHub = "******"
-				structs.Shodan = "******"
-				structs.Spyse = "******"
-				structs.URLScan = "******"
-				structs.ThreatBook = "******"
-				structs.Virustotal = "******"
-				structs.Securitytrails = "******"
+				//structs.Binaryedge = "******"
+				//structs.CensysSecret = "******"
+				//structs.CensysToken = "******"
+				//structs.Certspotter = "******"
+				//structs.GitHub = "******"
+				//structs.Shodan = "******"
+				//structs.Spyse = "******"
+				//structs.URLScan = "******"
+				//structs.ThreatBook = "******"
+				//structs.Virustotal = "******"
+				//structs.Securitytrails = "******"
 				result.ApiKey = structs
 			}
 		}
