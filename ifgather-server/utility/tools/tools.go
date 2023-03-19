@@ -59,9 +59,9 @@ func GetNsqResInfo(ctx context.Context, topic string, channel string) *model.Nsq
 		}
 	}
 	if len(result) == 0 {
-		return &model.NsqResInfo{Code: 0, Msg: "无客户端", Count: 0, Data: nil, MessageCount: message_count,
+		return &model.NsqResInfo{Code: 200, Msg: "无客户端", Count: 0, Data: nil, MessageCount: message_count,
 			MessageBytes: message_bytes, TimeoutCount: timeout_count, ClientCount: client_count}
 	}
-	return &model.NsqResInfo{Code: 0, Msg: "ok", Count: 0, Data: result, MessageCount: message_count,
+	return &model.NsqResInfo{Code: 200, Msg: "ok", Count: 0, Data: result, MessageCount: message_count,
 		MessageBytes: message_bytes, TimeoutCount: timeout_count, ClientCount: client_count}
 }
