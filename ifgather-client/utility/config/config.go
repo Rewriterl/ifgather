@@ -98,7 +98,7 @@ func getConfigInfo() {
 	if err != nil {
 		log.Fatalf("同步配置信息失败,配置信息解析失败:%s", err.Error())
 	}
-	if err := j.Scan(&Gconf); err != nil {
+	if err := j.Get("data").Scan(&Gconf); err != nil {
 		log.Fatalf("同步配置信息失败,配置信息反序列化失败:%s", err.Error())
 	}
 	log.Println("[+] 同步配置信息成功")
@@ -112,7 +112,8 @@ func goGetInfo() {
 		ctx := context.Background()
 		host := g.Cfg().MustGet(ctx, "server.host")
 		pwd := g.Cfg().MustGet(ctx, "server.password")
-		url := fmt.Sprintf("http://%s/api/client/info?pwd=%s", host, pwd)
+		address := g.Cfg().MustGet(ctx, "server.address")
+		url := fmt.Sprintf("http://%s%s/scan/client/info?pwd=%s", host, address, pwd)
 		result, err := g.Client().Timeout(15*time.Second).Get(ctx, url)
 		if err != nil {
 			continue
