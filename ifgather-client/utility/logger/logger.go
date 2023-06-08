@@ -26,7 +26,7 @@ func init() {
 		"path":   "logs",
 		"level":  "all",
 		"file":   "client-{Y-m-d}.log",
-		"prefix": "GoScan",
+		"prefix": "IfGather",
 	})
 
 	LogDomain = glog.New()

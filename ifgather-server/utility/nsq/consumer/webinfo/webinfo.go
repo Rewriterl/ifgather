@@ -119,7 +119,7 @@ func pushWebInfo(ctx context.Context, s *SendMessageStruct) error {
 			return nil
 		}
 		var scanPort *model.ScanPort
-		_ = tools.TransToStruct(one, scanPort)
+		_ = tools.TransToStruct(one, &scanPort)
 		if !scanPort.Flag {
 			_, err1 := dao.ScanPort.Ctx(ctx).Where("cus_name=? AND host=? AND nsq_flag=?", s.CusName, s.Host, true).Update(g.Map{"flag": true}) // 更改端口web探测状态
 			if err1 != nil {

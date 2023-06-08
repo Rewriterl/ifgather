@@ -19,7 +19,7 @@ import (
 // Init 初始化端口扫描
 func Init() {
 	if !public.IsOSSupported() {
-		logger.LogPortScan.Info(context.Background(), "[+] 检测到当前系统为非linux系统,使用Connect方式扫描")
+		logger.LogPortScan.Info(context.Background(), "[+] 检测到当前系统为非linux或Mac系统,使用Connect方式扫描")
 	} else {
 		if !public.IsRoot() {
 			logger.LogPortScan.Warningf(context.Background(), "[+] 提示：检测到当前用户非root用户，请使用sudo运行")

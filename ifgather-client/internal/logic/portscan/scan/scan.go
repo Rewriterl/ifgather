@@ -73,7 +73,7 @@ var GScan *Scanner
 // NewScanner 实例化Scan
 func NewScanner() error {
 
-	if !public.IsOSSupported() { // 不是linux系统
+	if !public.IsOSSupported() { // 不是linux或mac系统
 		scanner := &Scanner{}
 		scanner.ScanResults = NewResult()
 		GScan = scanner

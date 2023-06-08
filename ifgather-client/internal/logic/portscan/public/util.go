@@ -40,5 +40,4 @@ func SetUlimit() {
 		return
 	}
 	logger.LogPortScan.Debugf(context.Background(), "成功设置当前系统ulimit为:Cur:%d Max:%d", rLimit.Max, rLimit.Cur)
-
 }
